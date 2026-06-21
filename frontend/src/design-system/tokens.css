@@ -1,0 +1,48 @@
+/* ───────────────────────────────────────────────────────────
+ * IDEA — Design tokens (single source of truth)
+ * Visual identity follows the 60-30-10 rule. No component should
+ * hardcode a hex value; always reference these custom properties.
+ * ─────────────────────────────────────────────────────────── */
+:root {
+  /* ── Brand palette ── */
+  --color-surface: #f8f9fa;   /* Cloud grey / off-white — base canvas (~60%) */
+  --color-primary: #005f73;   /* Deep teal — primary brand color (60% of color) */
+  --color-secondary: #22333b; /* Dark slate — secondary (30%) */
+  --color-accent: #ca6702;    /* Vibrant coral — accent / CTAs (10%) */
+
+  /* ── Feedback ── */
+  --color-success: #0a9396;   /* Mint green */
+  --color-danger: #ae2012;    /* Terracotta red */
+
+  /* ── Semantic aliases ── */
+  --color-bg: var(--color-surface);
+  --color-text: var(--color-secondary);
+  --color-text-muted: #5c6b73;
+  --color-on-primary: #f8f9fa;
+  --color-on-accent: #f8f9fa;
+  --color-border: #dee2e6;
+
+  /* ── Typography ── */
+  --font-sans: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 2rem;
+
+  /* ── Radius ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* ── Spacing scale ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+
+  /* ── Elevation ── */
+  --shadow-sm: 0 1px 3px rgba(34, 51, 59, 0.12);
+  --shadow-md: 0 4px 12px rgba(34, 51, 59, 0.15);
+}
