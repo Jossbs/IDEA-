@@ -40,7 +40,7 @@ public class AttemptServiceImpl implements AttemptService {
     @Transactional(readOnly = true)
     public List<StudentExamCard> listAvailableForStudent(UUID studentId) {
         Set<UUID> taken = new HashSet<>(attemptRepository.findExamIdsByStudent(studentId));
-        return examService.listPublishedExams().stream()
+        return examService.listAssignedPublishedExams(studentId).stream()
                 .map(e -> new StudentExamCard(
                         e.examId(), e.title(), e.subjectName(), e.academicLevel(),
                         e.questionCount(), taken.contains(e.examId())))
