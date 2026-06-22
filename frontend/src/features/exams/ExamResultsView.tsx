@@ -7,11 +7,12 @@ import {
   CheckCircleIcon,
   FileTextIcon,
   GaugeIcon,
+  RotateIcon,
   UsersIcon,
 } from '@/design-system/icons'
 import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
-import { useExamResults } from './api'
+import { useExamResults, useResetAttempt } from './api'
 import type { ExamResults, ResultEntry } from './types'
 
 function formatDateTime(iso: string): string {
@@ -71,7 +72,16 @@ export function ExamResultsView() {
 function ResultsContent({ data }: { data: ExamResults }) {
   const { examId } = useParams()
   const navigate = useNavigate()
+  const reset = useResetAttempt(examId)
   const { examTitle, subjectName, maxScore, passingScore, results } = data
+
+  function handleReset(result: ResultEntry) {
+    if (reset.isPending) return
+    const ok = window.confirm(
+      `¿Habilitar un nuevo intento para ${result.studentName}? Su entrega actual se descartará.`,
+    )
+    if (ok) reset.mutate(result.attemptId)
+  }
 
   const stats = useMemo(() => {
     const total = results.length
@@ -121,6 +131,13 @@ function ResultsContent({ data }: { data: ExamResults }) {
           </span>
         </div>
 
+        {reset.isError && (
+          <p role="alert" className="font-inter text-sm text-danger">
+            No se pudo habilitar el reintento
+            {reset.error instanceof ApiError ? `: ${reset.error.message}` : '.'}
+          </p>
+        )}
+
         {results.length === 0 ? (
           <Card className="font-inter text-secondary/70 shadow-sm">
             Aún no hay entregas para este examen.
@@ -169,6 +186,16 @@ function ResultsContent({ data }: { data: ExamResults }) {
                               Revisar
                             </button>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => handleReset(result)}
+                            disabled={reset.isPending}
+                            title="Permitir que el alumno presente de nuevo el examen"
+                            className="font-inter inline-flex items-center gap-1.5 text-sm font-semibold text-secondary/60 transition-colors hover:text-accent disabled:opacity-50"
+                          >
+                            <RotateIcon className="size-4" />
+                            Reintento
+                          </button>
                         </div>
                       </td>
                     </tr>

@@ -51,6 +51,16 @@ public class ExamController {
                 .body(new CreateExamResponse(examId, "Examen creado correctamente."));
     }
 
+    /** Duplicates an exam as a new unpublished draft owned by the caller. */
+    @PostMapping("/{id}/duplicate")
+    public ResponseEntity<CreateExamResponse> duplicate(
+            @PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser teacher) {
+        UUID newId = examService.duplicateExam(id, teacher.userId());
+        URI location = URI.create("/api/exams/" + newId);
+        return ResponseEntity.created(location)
+                .body(new CreateExamResponse(newId, "Examen duplicado correctamente."));
+    }
+
     /** Lists the authenticated teacher's active exams as dashboard summaries. */
     @GetMapping
     public List<ExamSummaryResponse> list(@AuthenticationPrincipal AuthenticatedUser teacher) {
