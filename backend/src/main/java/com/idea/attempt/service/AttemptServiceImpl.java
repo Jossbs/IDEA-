@@ -10,6 +10,9 @@ import com.idea.attempt.dto.QuestionGrade;
 import com.idea.attempt.dto.ResultEntry;
 import com.idea.attempt.dto.ReviewItem;
 import com.idea.attempt.dto.ReviewRequest;
+import com.idea.attempt.dto.StudentAnswerOption;
+import com.idea.attempt.dto.StudentAnswerReview;
+import com.idea.attempt.dto.StudentAttemptReview;
 import com.idea.attempt.dto.StudentExamCard;
 import com.idea.attempt.dto.SubmitAttemptRequest;
 import com.idea.attempt.repository.AttemptRepository;
@@ -20,6 +23,7 @@ import com.idea.exam.service.ExamService;
 import com.idea.shared.web.exception.DuplicateResourceException;
 import com.idea.shared.web.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,11 +48,21 @@ public class AttemptServiceImpl implements AttemptService {
     @Override
     @Transactional(readOnly = true)
     public List<StudentExamCard> listAvailableForStudent(UUID studentId) {
-        Set<UUID> taken = new HashSet<>(attemptRepository.findExamIdsByStudent(studentId));
+        Map<UUID, ExamAttempt> attempts =
+                attemptRepository.findByStudentIdAndActiveRecordTrue(studentId).stream()
+                        .collect(Collectors.toMap(ExamAttempt::getExamId, a -> a, (a, b) -> a));
         return examService.listAssignedPublishedExams(studentId).stream()
-                .map(e -> new StudentExamCard(
-                        e.examId(), e.title(), e.subjectName(), e.academicLevel(),
-                        e.questionCount(), taken.contains(e.examId())))
+                .map(e -> {
+                    ExamAttempt a = attempts.get(e.examId());
+                    if (a == null) {
+                        return new StudentExamCard(
+                                e.examId(), e.title(), e.subjectName(), e.academicLevel(),
+                                e.questionCount(), false, null, null, null);
+                    }
+                    return new StudentExamCard(
+                            e.examId(), e.title(), e.subjectName(), e.academicLevel(),
+                            e.questionCount(), true, a.getStatus(), totalScore(a), a.getMaxScore());
+                })
                 .toList();
     }
 
@@ -100,6 +114,63 @@ public class AttemptServiceImpl implements AttemptService {
 
         return new AttemptResultResponse(
                 saved.getAttemptId(), saved.getStatus(), autoScore, exam.maxScore());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StudentAttemptReview getMyResult(UUID examId, UUID studentId) {
+        ExamAttempt attempt = attemptRepository
+                .findByExamIdAndStudentIdAndActiveRecordTrue(examId, studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aún no has presentado este examen."));
+        GradingExam exam = examService.getGradingExam(examId);
+
+        Map<UUID, Set<UUID>> selectedByQuestion = new HashMap<>();
+        Map<UUID, String> textByQuestion = new HashMap<>();
+        for (AttemptAnswer ans : attempt.getAnswers()) {
+            if (ans.getSelectedOptionId() != null) {
+                selectedByQuestion
+                        .computeIfAbsent(ans.getQuestionId(), k -> new HashSet<>())
+                        .add(ans.getSelectedOptionId());
+            }
+            if (ans.getAnswerText() != null) {
+                textByQuestion.put(ans.getQuestionId(), ans.getAnswerText());
+            }
+        }
+
+        List<StudentAnswerReview> questions = exam.questions().stream()
+                .map(q -> toAnswerReview(
+                        q,
+                        selectedByQuestion.getOrDefault(q.questionId(), Set.of()),
+                        textByQuestion.get(q.questionId())))
+                .toList();
+
+        return new StudentAttemptReview(
+                exam.examId(), exam.title(), attempt.getStatus(),
+                totalScore(attempt), exam.maxScore(), questions);
+    }
+
+    /** Maps one graded question to the student's correction view. */
+    private static StudentAnswerReview toAnswerReview(
+            GradingQuestion question, Set<UUID> selected, String text) {
+        if (!question.isAutoGradable()) {
+            return new StudentAnswerReview(
+                    question.questionId(), question.questionText(), question.questionType(),
+                    question.points(), null, false, false, text == null ? "" : text, List.of());
+        }
+        List<StudentAnswerOption> options = question.options().stream()
+                .map(o -> new StudentAnswerOption(
+                        o.optionId(), o.optionText(), o.correct(), selected.contains(o.optionId())))
+                .toList();
+        boolean correct = !selected.isEmpty() && selected.equals(question.correctOptionIds());
+        return new StudentAnswerReview(
+                question.questionId(), question.questionText(), question.questionType(),
+                question.points(), correct ? question.points() : 0, correct, true, null, options);
+    }
+
+    /** Auto score plus manual score (0 until reviewed). */
+    private static int totalScore(ExamAttempt attempt) {
+        return attempt.getAutoScore()
+                + (attempt.getManualScore() == null ? 0 : attempt.getManualScore());
     }
 
     @Override
@@ -179,6 +250,18 @@ public class AttemptServiceImpl implements AttemptService {
 
         attempt.setManualScore(manualScore);
         attempt.setStatus(AttemptStatus.GRADED);
+        attemptRepository.save(attempt);
+    }
+
+    @Override
+    @Transactional
+    public void resetAttempt(UUID examId, UUID attemptId, UUID teacherId) {
+        ownedExam(examId, teacherId); // authorize
+        ExamAttempt attempt = attemptRepository.findById(attemptId)
+                .filter(a -> examId.equals(a.getExamId()))
+                .orElseThrow(() -> attemptNotFound(attemptId));
+        // Soft-delete frees the unique active attempt so the student can retry.
+        attempt.setActiveRecord(false);
         attemptRepository.save(attempt);
     }
 

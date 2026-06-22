@@ -14,10 +14,12 @@ public interface AttemptRepository extends JpaRepository<ExamAttempt, UUID> {
 
     boolean existsByExamIdAndStudentIdAndActiveRecordTrue(UUID examId, UUID studentId);
 
-    @Query("""
-            SELECT a.examId FROM ExamAttempt a
-            WHERE a.studentId = :studentId AND a.activeRecord = true""")
-    List<UUID> findExamIdsByStudent(UUID studentId);
+    /** All of a student's active attempts, to annotate their exam list. */
+    List<ExamAttempt> findByStudentIdAndActiveRecordTrue(UUID studentId);
+
+    /** A student's own attempt for an exam, with answers (to review corrections). */
+    @EntityGraph(attributePaths = "answers")
+    Optional<ExamAttempt> findByExamIdAndStudentIdAndActiveRecordTrue(UUID examId, UUID studentId);
 
     /** Result rows for a teacher's panel: joins the student's name from users. */
     @Query("""

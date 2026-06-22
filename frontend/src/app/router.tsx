@@ -7,6 +7,7 @@ import { ExamListView } from '@/features/exams/ExamListView'
 import { ExamPreviewView } from '@/features/exams/ExamPreviewView'
 import { ExamResultsView } from '@/features/exams/ExamResultsView'
 import { StudentExamView } from '@/features/exams/StudentExamView'
+import { StudentResultView } from '@/features/student/StudentResultView'
 import { SubjectsView } from '@/features/subjects/SubjectsView'
 import { AppLayout } from './AppLayout'
 import { HomeRedirect } from './HomeRedirect'
@@ -26,6 +27,8 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <HomeRedirect /> },
+          // Student self-review of a graded attempt (inside the shell).
+          { path: 'exam/:examId/result', element: <StudentResultView /> },
           // Teacher workspace.
           {
             element: <RequireAuth role="TEACHER" />,
