@@ -12,6 +12,10 @@ export interface StudentExamCard {
   academicLevel: AcademicLevel
   questionCount: number
   alreadyTaken: boolean
+  /** Outcome once submitted; null while still pending. */
+  attemptStatus: AttemptStatus | null
+  score: number | null
+  maxScore: number | null
 }
 
 export interface StudentOption {
@@ -47,4 +51,35 @@ export interface AttemptResult {
   status: AttemptStatus
   score: number
   maxScore: number
+}
+
+/* ── Student self-review (GET /api/student/exams/{id}/result) ── */
+
+export interface StudentAnswerOption {
+  optionId: string
+  optionText: string
+  correct: boolean
+  selected: boolean
+}
+
+export interface StudentAnswerReview {
+  questionId: string
+  questionText: string
+  questionType: QuestionType
+  points: number
+  /** Points earned; null for short-text (part of the manual total). */
+  awardedPoints: number | null
+  correct: boolean
+  autoGraded: boolean
+  answerText: string | null
+  options: StudentAnswerOption[]
+}
+
+export interface StudentAttemptReview {
+  examId: string
+  examTitle: string
+  status: AttemptStatus
+  score: number
+  maxScore: number
+  questions: StudentAnswerReview[]
 }

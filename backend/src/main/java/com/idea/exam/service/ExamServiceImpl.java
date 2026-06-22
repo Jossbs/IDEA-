@@ -3,12 +3,12 @@ package com.idea.exam.service;
 import com.idea.exam.domain.Exam;
 import com.idea.exam.domain.ExamAssignment;
 import com.idea.exam.domain.Question;
-import com.idea.exam.domain.QuestionOption;
 import com.idea.exam.domain.Subject;
 import com.idea.exam.dto.CreateExamRequest;
 import com.idea.exam.dto.ExamDetailResponse;
 import com.idea.exam.dto.ExamSummaryResponse;
 import com.idea.exam.dto.GradingExam;
+import com.idea.exam.dto.GradingOption;
 import com.idea.exam.dto.GradingQuestion;
 import com.idea.exam.dto.StudentExamResponse;
 import com.idea.exam.dto.StudentOptionResponse;
@@ -21,7 +21,6 @@ import com.idea.shared.web.exception.ConflictException;
 import com.idea.shared.web.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +66,14 @@ public class ExamServiceImpl implements ExamService {
         ExamMapper.applyUpdate(exam, request);
         examRepository.save(exam);
         replaceAssignments(examId, request.studentIds());
+    }
+
+    @Override
+    @Transactional
+    public UUID duplicateExam(UUID examId, UUID teacherId) {
+        Exam source = ownedExam(examId, teacherId);
+        Exam copy = ExamMapper.duplicate(source, teacherId, source.getTitle() + " (copia)");
+        return examRepository.save(copy).getExamId();
     }
 
     @Override
@@ -163,12 +170,11 @@ public class ExamServiceImpl implements ExamService {
     }
 
     private static GradingQuestion toGradingQuestion(Question q) {
-        var correctIds = q.getOptions().stream()
-                .filter(QuestionOption::isCorrect)
-                .map(QuestionOption::getOptionId)
-                .collect(Collectors.toSet());
+        List<GradingOption> options = q.getOptions().stream()
+                .map(o -> new GradingOption(o.getOptionId(), o.getOptionText(), o.isCorrect()))
+                .toList();
         return new GradingQuestion(
-                q.getQuestionId(), q.getQuestionText(), q.getQuestionType(), q.getPoints(), correctIds);
+                q.getQuestionId(), q.getQuestionText(), q.getQuestionType(), q.getPoints(), options);
     }
 
     private static ResourceNotFoundException notFound(UUID examId) {

@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/apiClient'
-import type { AnswerSubmission, AttemptResult, StudentExam, StudentExamCard } from './types'
+import type {
+  AnswerSubmission,
+  AttemptResult,
+  StudentAttemptReview,
+  StudentExam,
+  StudentExamCard,
+} from './types'
 
 const KEY = 'student-exams'
 
@@ -29,5 +35,14 @@ export function useSubmitAttempt(examId: string | undefined) {
     mutationFn: (answers: AnswerSubmission[]) =>
       api.post<AttemptResult>(`/student/exams/${examId}/attempts`, { answers }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
+  })
+}
+
+/** The student's own graded attempt with corrections. Disabled until an id is provided. */
+export function useMyResult(examId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, examId, 'result'],
+    queryFn: () => api.get<StudentAttemptReview>(`/student/exams/${examId}/result`),
+    enabled: Boolean(examId),
   })
 }

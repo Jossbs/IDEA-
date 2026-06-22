@@ -31,6 +31,40 @@ public final class ExamMapper {
     }
 
     /**
+     * Deep-clones an exam into a fresh, unpublished draft for the same teacher:
+     * a new title plus copies of every question and option (no ids, no
+     * assignments). Used to spin up a recovery/retake exam to tweak.
+     */
+    public static Exam duplicate(Exam source, UUID teacherId, String newTitle) {
+        Exam copy = new Exam();
+        copy.setTeacherId(teacherId);
+        copy.setSubjectId(source.getSubjectId());
+        copy.setTitle(newTitle);
+        copy.setDescription(source.getDescription());
+        copy.setPublished(false);
+        for (Question question : source.getQuestions()) {
+            copy.addQuestion(cloneQuestion(question));
+        }
+        return copy;
+    }
+
+    private static Question cloneQuestion(Question source) {
+        Question question = new Question();
+        question.setQuestionText(source.getQuestionText());
+        question.setQuestionType(source.getQuestionType());
+        question.setDifficultyLevel(source.getDifficultyLevel());
+        question.setPoints(source.getPoints());
+        question.setSortOrder(source.getSortOrder());
+        for (QuestionOption option : source.getOptions()) {
+            QuestionOption copy = new QuestionOption();
+            copy.setOptionText(option.getOptionText());
+            copy.setCorrect(option.isCorrect());
+            question.addOption(copy);
+        }
+        return question;
+    }
+
+    /**
      * Overwrites an existing exam's config and replaces its question graph from
      * the request. orphanRemoval deletes the old questions/options; safe only
      * when the exam has no submissions (the service guards that).

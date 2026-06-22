@@ -4,6 +4,7 @@ import com.idea.attempt.dto.AttemptResultResponse;
 import com.idea.attempt.dto.AttemptReviewResponse;
 import com.idea.attempt.dto.ExamResultsResponse;
 import com.idea.attempt.dto.ReviewRequest;
+import com.idea.attempt.dto.StudentAttemptReview;
 import com.idea.attempt.dto.StudentExamCard;
 import com.idea.attempt.dto.SubmitAttemptRequest;
 import java.util.List;
@@ -24,6 +25,14 @@ public interface AttemptService {
     AttemptResultResponse submit(UUID examId, UUID studentId, SubmitAttemptRequest request);
 
     /**
+     * A student's own graded attempt with per-question corrections (answer key
+     * revealed, their selection marked, points earned).
+     *
+     * @throws com.idea.shared.web.exception.ResourceNotFoundException if they have not submitted it
+     */
+    StudentAttemptReview getMyResult(UUID examId, UUID studentId);
+
+    /**
      * The results panel for an exam, restricted to its owning teacher.
      *
      * @throws com.idea.shared.web.exception.ResourceNotFoundException if missing or not theirs
@@ -42,4 +51,12 @@ public interface AttemptService {
      * sets the manual score and marks it GRADED.
      */
     void review(UUID examId, UUID attemptId, UUID teacherId, ReviewRequest request);
+
+    /**
+     * Soft-deletes a student's attempt so they may retake the exam (a retry the
+     * teacher grants). Owner-scoped to the exam's teacher.
+     *
+     * @throws com.idea.shared.web.exception.ResourceNotFoundException if missing or not theirs
+     */
+    void resetAttempt(UUID examId, UUID attemptId, UUID teacherId);
 }
