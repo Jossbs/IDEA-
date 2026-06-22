@@ -22,9 +22,9 @@ public interface ExamRepository extends JpaRepository<Exam, UUID> {
                 e.published, SIZE(e.questions), e.updateTimestamp)
             FROM Exam e
             JOIN Subject s ON s.subjectIdentifier = e.subjectId
-            WHERE e.activeRecord = true
+            WHERE e.activeRecord = true AND e.teacherId = :teacherId
             ORDER BY e.updateTimestamp DESC""")
-    List<ExamSummaryResponse> findSummaries();
+    List<ExamSummaryResponse> findSummariesByTeacher(UUID teacherId);
 
     /** Fetches one exam with its questions eagerly (options load lazily within the tx). */
     @EntityGraph(attributePaths = "questions")

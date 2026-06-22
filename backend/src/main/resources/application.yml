@@ -25,6 +25,14 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
+app:
+  jwt:
+    # HS256 signing key (>= 32 bytes). The default is for local/test only —
+    # always override JWT_SECRET in real environments.
+    secret: ${JWT_SECRET:local-dev-only-change-me-please-0123456789-abcdef}
+    access-expiration-minutes: ${JWT_ACCESS_EXPIRATION_MINUTES:30}
+    refresh-expiration-days: ${JWT_REFRESH_EXPIRATION_DAYS:7}
+
 server:
   port: ${BACKEND_PORT:8080}
 

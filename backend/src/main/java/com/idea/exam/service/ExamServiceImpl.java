@@ -33,22 +33,23 @@ public class ExamServiceImpl implements ExamService {
      */
     @Override
     @Transactional
-    public UUID createExam(CreateExamRequest request) {
-        Exam exam = ExamMapper.toEntity(request);
+    public UUID createExam(CreateExamRequest request, UUID teacherId) {
+        Exam exam = ExamMapper.toEntity(request, teacherId);
         return examRepository.save(exam).getExamId();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamSummaryResponse> listExams() {
-        return examRepository.findSummaries();
+    public List<ExamSummaryResponse> listExams(UUID teacherId) {
+        return examRepository.findSummariesByTeacher(teacherId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ExamDetailResponse getExam(UUID examId) {
+    public ExamDetailResponse getExam(UUID examId, UUID teacherId) {
         Exam exam = examRepository.findWithQuestionsByExamId(examId)
                 .filter(Exam::isActiveRecord)
+                .filter(e -> teacherId.equals(e.getTeacherId()))
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No se encontró el examen con identificador " + examId + "."));
         Subject subject = subjectRepository.findById(exam.getSubjectId())
