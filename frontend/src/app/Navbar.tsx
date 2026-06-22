@@ -5,7 +5,7 @@ type NavItem = { label: string; to: string; ready: boolean }
 
 const navItems: NavItem[] = [
   { label: 'Materias', to: '/subjects', ready: true },
-  { label: 'Exámenes', to: '/exams', ready: false },
+  { label: 'Exámenes', to: '/exams', ready: true },
   { label: 'Bancos de Preguntas', to: '/question-banks', ready: false },
   { label: 'Reportes', to: '/reports', ready: false },
 ]
