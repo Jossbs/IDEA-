@@ -4,8 +4,8 @@ import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
 import {
   CalendarIcon,
-  EyeIcon,
   FileTextIcon,
+  GaugeIcon,
   PencilIcon,
   SearchIcon,
   SendIcon,
@@ -56,6 +56,7 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
 }
 
 function ExamCard({ exam }: { exam: ExamSummary }) {
+  const navigate = useNavigate()
   return (
     <Card className="relative flex flex-col gap-4 shadow-sm transition-shadow hover:shadow-card">
       <span className="absolute right-4 top-4">
@@ -82,7 +83,11 @@ function ExamCard({ exam }: { exam: ExamSummary }) {
 
       <div className="mt-auto flex items-center gap-5 border-t border-secondary/10 pt-3">
         <CardAction icon={<PencilIcon className="size-4" />} label="Editar" />
-        <CardAction icon={<EyeIcon className="size-4" />} label="Previsualizar" />
+        <CardAction
+          icon={<GaugeIcon className="size-4" />}
+          label="Resultados"
+          onClick={() => navigate(`/exams/${exam.examId}/results`)}
+        />
         <CardAction
           icon={<SendIcon className="size-4" />}
           label={exam.published ? 'Asignar' : 'Publicar'}
