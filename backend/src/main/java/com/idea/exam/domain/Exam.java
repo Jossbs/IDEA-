@@ -37,6 +37,10 @@ public class Exam extends BaseEntity {
     @Column(name = "subject_id", nullable = false)
     private UUID subjectId;
 
+    /** FK to {@code users.user_id} — the teacher who authored this exam. */
+    @Column(name = "teacher_id")
+    private UUID teacherId;
+
     @Column(name = "title", nullable = false, length = 150)
     private String title;
 

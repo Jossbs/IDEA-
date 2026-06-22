@@ -6,82 +6,17 @@ import {
   CalendarIcon,
   EyeIcon,
   FileTextIcon,
+  GaugeIcon,
   PencilIcon,
   SearchIcon,
   SendIcon,
 } from '@/design-system/icons'
+import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
+import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
-
-type ExamStatus = 'PUBLISHED' | 'DRAFT'
-
-interface ExamSummary {
-  id: string
-  title: string
-  subject: string
-  level: string
-  status: ExamStatus
-  questionCount: number
-  /** ISO date of the last edit. */
-  updatedAt: string
-}
-
-/** Mock catalog so the dashboard renders before the GET endpoint exists. */
-const MOCK_EXAMS: ExamSummary[] = [
-  {
-    id: '1',
-    title: 'Examen Parcial 1 — Cinemática',
-    subject: 'Física',
-    level: 'Bachillerato',
-    status: 'PUBLISHED',
-    questionCount: 12,
-    updatedAt: '2026-06-18',
-  },
-  {
-    id: '2',
-    title: 'Diagnóstico de Álgebra',
-    subject: 'Matemáticas',
-    level: 'Universidad',
-    status: 'DRAFT',
-    questionCount: 8,
-    updatedAt: '2026-06-20',
-  },
-  {
-    id: '3',
-    title: 'Quiz: Tabla Periódica',
-    subject: 'Química',
-    level: 'Bachillerato',
-    status: 'PUBLISHED',
-    questionCount: 15,
-    updatedAt: '2026-06-12',
-  },
-  {
-    id: '4',
-    title: 'Examen Final — Revolución Mexicana',
-    subject: 'Historia',
-    level: 'Secundaria',
-    status: 'DRAFT',
-    questionCount: 20,
-    updatedAt: '2026-06-21',
-  },
-  {
-    id: '5',
-    title: 'Comprensión Lectora I',
-    subject: 'Lengua y Literatura',
-    level: 'Secundaria',
-    status: 'PUBLISHED',
-    questionCount: 10,
-    updatedAt: '2026-06-09',
-  },
-  {
-    id: '6',
-    title: 'Repaso: Genética Básica',
-    subject: 'Biología',
-    level: 'Bachillerato',
-    status: 'DRAFT',
-    questionCount: 6,
-    updatedAt: '2026-06-22',
-  },
-]
+import { useExams } from './api'
+import { AssignDialog } from './components/AssignDialog'
+import type { ExamSummary } from './types'
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-ES', {
@@ -91,13 +26,13 @@ function formatDate(iso: string): string {
   })
 }
 
-function StatusBadge({ status }: { status: ExamStatus }) {
-  return status === 'PUBLISHED' ? (
+function StatusBadge({ published }: { published: boolean }) {
+  return published ? (
     <span className="font-inter rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">
       Publicado
     </span>
   ) : (
-    <span className="font-inter rounded-full bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary/60">
+    <span className="font-inter rounded-full bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary/70">
       Borrador
     </span>
   )
@@ -114,7 +49,7 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
     <button
       type="button"
       onClick={onClick}
-      className="font-inter inline-flex items-center gap-1.5 text-sm font-medium text-secondary/60 transition-colors hover:text-accent"
+      className="font-inter inline-flex items-center gap-1.5 text-sm font-medium text-secondary/70 transition-colors hover:text-accent"
     >
       {icon}
       {label}
@@ -122,37 +57,52 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
   )
 }
 
-function ExamCard({ exam }: { exam: ExamSummary }) {
+function ExamCard({ exam, onAssign }: { exam: ExamSummary; onAssign: (exam: ExamSummary) => void }) {
+  const navigate = useNavigate()
   return (
     <Card className="relative flex flex-col gap-4 shadow-sm transition-shadow hover:shadow-card">
       <span className="absolute right-4 top-4">
-        <StatusBadge status={exam.status} />
+        <StatusBadge published={exam.published} />
       </span>
 
       <div className="pr-24">
         <h3 className="font-nunito text-lg font-bold text-secondary">{exam.title}</h3>
-        <p className="font-inter mt-0.5 text-sm text-secondary/60">
-          {exam.subject} · {exam.level}
+        <p className="font-inter mt-0.5 text-sm text-secondary/70">
+          {exam.subjectName} · {ACADEMIC_LEVEL_LABELS[exam.academicLevel]}
         </p>
       </div>
 
-      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-secondary/60">
+      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-secondary/70">
         <span className="inline-flex items-center gap-1.5">
           <FileTextIcon className="size-4" />
-          {exam.questionCount} preguntas
+          {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <CalendarIcon className="size-4" />
-          {formatDate(exam.updatedAt)}
+          {formatDate(exam.updateTimestamp)}
         </span>
       </div>
 
-      <div className="mt-auto flex items-center gap-5 border-t border-secondary/10 pt-3">
-        <CardAction icon={<PencilIcon className="size-4" />} label="Editar" />
-        <CardAction icon={<EyeIcon className="size-4" />} label="Previsualizar" />
+      <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-secondary/10 pt-3">
+        <CardAction
+          icon={<PencilIcon className="size-4" />}
+          label="Editar"
+          onClick={() => navigate(`/exams/${exam.examId}/edit`)}
+        />
+        <CardAction
+          icon={<EyeIcon className="size-4" />}
+          label="Previsualizar"
+          onClick={() => navigate(`/exams/${exam.examId}/preview`)}
+        />
         <CardAction
           icon={<SendIcon className="size-4" />}
-          label={exam.status === 'PUBLISHED' ? 'Asignar' : 'Publicar'}
+          label="Asignar"
+          onClick={() => onAssign(exam)}
+        />
+        <CardAction
+          icon={<GaugeIcon className="size-4" />}
+          label="Resultados"
+          onClick={() => navigate(`/exams/${exam.examId}/results`)}
         />
       </div>
     </Card>
@@ -163,22 +113,25 @@ function ExamCard({ exam }: { exam: ExamSummary }) {
 export function ExamListView() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const [assignTarget, setAssignTarget] = useState<ExamSummary | null>(null)
+  const { data: exams, isLoading, isError, error } = useExams()
 
-  const exams = useMemo(() => {
+  const filtered = useMemo(() => {
+    if (!exams) return []
     const q = query.trim().toLowerCase()
-    if (!q) return MOCK_EXAMS
-    return MOCK_EXAMS.filter(
+    if (!q) return exams
+    return exams.filter(
       (exam) =>
-        exam.title.toLowerCase().includes(q) || exam.subject.toLowerCase().includes(q),
+        exam.title.toLowerCase().includes(q) || exam.subjectName.toLowerCase().includes(q),
     )
-  }, [query])
+  }, [exams, query])
 
   return (
     <div className="grid gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-nunito text-3xl font-extrabold text-secondary">Mis Evaluaciones</h1>
-          <p className="font-inter mt-1 text-secondary/60">
+          <p className="font-inter mt-1 text-secondary/70">
             Administra tus exámenes: borradores y publicados.
           </p>
         </div>
@@ -189,27 +142,59 @@ export function ExamListView() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-secondary/40" />
+        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-secondary/50" />
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          aria-label="Buscar examen por nombre o materia"
           placeholder="Buscar examen por nombre o materia…"
-          className="font-inter w-full rounded-lg border border-secondary/20 bg-white py-2 pl-9 pr-3 text-secondary placeholder:text-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-base"
+          className="font-inter w-full rounded-lg border border-secondary/20 bg-white py-2 pl-9 pr-3 text-secondary placeholder:text-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-base"
         />
       </div>
 
-      {/* Catalog grid */}
-      {exams.length === 0 ? (
-        <Card className="font-inter text-secondary/60 shadow-sm">
-          No se encontraron exámenes que coincidan con “{query}”.
+      {/* States: loading → error → empty → results */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Card key={i} className="h-40 animate-pulse bg-secondary/[0.04] shadow-sm" />
+          ))}
+        </div>
+      ) : isError ? (
+        <Card className="font-inter text-danger shadow-sm">
+          No se pudieron cargar los exámenes
+          {error instanceof ApiError ? `: ${error.message}` : '.'}
+        </Card>
+      ) : filtered.length === 0 ? (
+        <Card className="font-inter grid gap-3 text-secondary/70 shadow-sm">
+          {query.trim() ? (
+            <p>No se encontraron exámenes que coincidan con «{query}».</p>
+          ) : (
+            <>
+              <p className="font-nunito text-lg font-bold text-secondary">
+                Aún no has creado exámenes.
+              </p>
+              <p>Crea tu primer examen para empezar a evaluar a tus alumnos.</p>
+              <Button variant="accent" className="w-fit" onClick={() => navigate('/exams/new')}>
+                + Crear mi primer examen
+              </Button>
+            </>
+          )}
         </Card>
       ) : (
         <div className={cn('grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3')}>
-          {exams.map((exam) => (
-            <ExamCard key={exam.id} exam={exam} />
+          {filtered.map((exam) => (
+            <ExamCard key={exam.examId} exam={exam} onAssign={setAssignTarget} />
           ))}
         </div>
+      )}
+
+      {assignTarget && (
+        <AssignDialog
+          examId={assignTarget.examId}
+          examTitle={assignTarget.title}
+          onClose={() => setAssignTarget(null)}
+        />
       )}
     </div>
   )

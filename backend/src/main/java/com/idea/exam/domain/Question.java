@@ -45,6 +45,10 @@ public class Question extends BaseEntity {
     @Column(name = "question_type", nullable = false, length = 30)
     private QuestionType questionType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "difficulty_level", nullable = false, length = 10)
+    private DifficultyLevel difficultyLevel;
+
     @Column(name = "points", nullable = false)
     private int points;
 

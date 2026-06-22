@@ -1,8 +1,18 @@
 import { Card } from '@/design-system/components/Card'
+import { SelectField, TextField } from '@/design-system/components/Field'
 import { TrashIcon } from '@/design-system/icons'
 import { cn } from '@/lib/cn'
-import { DIFFICULTY_LABELS, DIFFICULTY_LEVELS, MIN_OPTIONS } from '../types'
-import type { DifficultyLevel, ExamQuestion } from '../types'
+import {
+  DIFFICULTY_LABELS,
+  DIFFICULTY_LEVELS,
+  hasEditableOptions,
+  hasOptions,
+  MIN_OPTIONS,
+  QUESTION_TYPE_LABELS,
+  QUESTION_TYPES,
+  selectionMode,
+} from '../types'
+import type { DifficultyLevel, ExamQuestion, QuestionType } from '../types'
 import { OptionRow } from './OptionRow'
 
 type QuestionCardProps = {
@@ -11,6 +21,8 @@ type QuestionCardProps = {
   /** False for the last remaining question, so the exam always has at least one. */
   canRemove: boolean
   onTextChange: (text: string) => void
+  onTypeChange: (type: QuestionType) => void
+  onPointsChange: (points: number) => void
   onDifficultyChange: (difficulty: DifficultyLevel) => void
   onOptionTextChange: (optionId: string, text: string) => void
   onMarkCorrect: (optionId: string) => void
@@ -32,6 +44,8 @@ export function QuestionCard({
   index,
   canRemove,
   onTextChange,
+  onTypeChange,
+  onPointsChange,
   onDifficultyChange,
   onOptionTextChange,
   onMarkCorrect,
@@ -39,7 +53,9 @@ export function QuestionCard({
   onRemoveOption,
   onRemove,
 }: QuestionCardProps) {
-  const canRemoveOption = question.options.length > MIN_OPTIONS
+  const mode = selectionMode(question.type)
+  const editableOptions = hasEditableOptions(question.type)
+  const canRemoveOption = editableOptions && question.options.length > MIN_OPTIONS
 
   return (
     <Card className="shadow-sm">
@@ -66,9 +82,35 @@ export function QuestionCard({
           className="font-inter w-full resize-y rounded-lg border border-secondary/20 bg-white px-3 py-2 text-secondary placeholder:text-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
         />
 
+        {/* Type + points */}
+        <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+          <SelectField
+            label="Tipo de pregunta"
+            value={question.type}
+            onChange={(e) => onTypeChange(e.target.value as QuestionType)}
+          >
+            {QUESTION_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {QUESTION_TYPE_LABELS[type]}
+              </option>
+            ))}
+          </SelectField>
+
+          <TextField
+            label="Puntos"
+            type="number"
+            min={1}
+            value={question.points}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10)
+              onPointsChange(Number.isNaN(n) || n < 1 ? 1 : n)
+            }}
+          />
+        </div>
+
         {/* Difficulty — color-coded segmented control */}
         <div className="flex items-center gap-3">
-          <span className="font-inter text-sm font-medium text-secondary/60">Dificultad</span>
+          <span className="font-inter text-sm font-medium text-secondary/70">Dificultad</span>
           <div className="flex gap-2">
             {DIFFICULTY_LEVELS.map((level) => {
               const active = question.difficulty === level
@@ -82,7 +124,7 @@ export function QuestionCard({
                     'font-inter rounded-full border px-3 py-1 text-sm font-medium transition-colors',
                     active
                       ? difficultyActive[level]
-                      : 'border-secondary/20 text-secondary/70 hover:border-secondary/40',
+                      : 'border-secondary/30 text-secondary/80 hover:border-secondary/50',
                   )}
                 >
                   {DIFFICULTY_LABELS[level]}
@@ -92,31 +134,42 @@ export function QuestionCard({
           </div>
         </div>
 
-        <div className="grid gap-2">
-          <span className="font-inter text-sm font-medium text-secondary/60">
-            Opciones (marca la correcta)
-          </span>
-          {question.options.map((option, i) => (
-            <OptionRow
-              key={option.id}
-              option={option}
-              index={i}
-              groupName={question.id}
-              canRemove={canRemoveOption}
-              onTextChange={(text) => onOptionTextChange(option.id, text)}
-              onMarkCorrect={() => onMarkCorrect(option.id)}
-              onRemove={() => onRemoveOption(option.id)}
-            />
-          ))}
-        </div>
+        {/* Options — depends on the question type */}
+        {hasOptions(question.type) ? (
+          <div className="grid gap-2">
+            <span className="font-inter text-sm font-medium text-secondary/70">
+              {mode === 'multiple' ? 'Opciones (marca las correctas)' : 'Opciones (marca la correcta)'}
+            </span>
+            {question.options.map((option, i) => (
+              <OptionRow
+                key={option.id}
+                option={option}
+                index={i}
+                groupName={question.id}
+                mode={mode}
+                editableText={editableOptions}
+                canRemove={canRemoveOption}
+                onTextChange={(text) => onOptionTextChange(option.id, text)}
+                onMarkCorrect={() => onMarkCorrect(option.id)}
+                onRemove={() => onRemoveOption(option.id)}
+              />
+            ))}
 
-        <button
-          type="button"
-          onClick={onAddOption}
-          className="font-inter inline-flex w-fit items-center gap-1 text-sm font-medium text-accent transition-colors hover:text-accent-hover"
-        >
-          + Agregar opción
-        </button>
+            {editableOptions && (
+              <button
+                type="button"
+                onClick={onAddOption}
+                className="font-inter inline-flex w-fit items-center gap-1 text-sm font-medium text-accent transition-colors hover:text-accent-hover"
+              >
+                + Agregar opción
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="font-inter rounded-lg bg-secondary/5 px-3 py-2 text-sm text-secondary/70">
+            El alumno responde en texto libre. Esta pregunta se calificará manualmente.
+          </p>
+        )}
       </div>
     </Card>
   )
