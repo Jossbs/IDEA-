@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
+import { SelectField, TextField } from '@/design-system/components/Field'
 import {
   CalendarIcon,
+  CopyIcon,
   EyeIcon,
   FileTextIcon,
   GaugeIcon,
@@ -11,12 +13,46 @@ import {
   SearchIcon,
   SendIcon,
 } from '@/design-system/icons'
-import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
+import { ACADEMIC_LEVEL_LABELS, ACADEMIC_LEVELS } from '@/features/subjects/types'
+import type { AcademicLevel } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
-import { useExams } from './api'
+import { useDuplicateExam, useExams } from './api'
 import { AssignDialog } from './components/AssignDialog'
 import type { ExamSummary } from './types'
+
+/** Status filter values. */
+type StatusFilter = 'all' | 'published' | 'draft'
+
+/** Active filter state for the exam list. */
+type Filters = {
+  query: string
+  subject: string
+  level: AcademicLevel | 'all'
+  status: StatusFilter
+  from: string
+  to: string
+}
+
+const EMPTY_FILTERS: Filters = {
+  query: '',
+  subject: 'all',
+  level: 'all',
+  status: 'all',
+  from: '',
+  to: '',
+}
+
+function hasActiveFilters(f: Filters): boolean {
+  return (
+    f.query.trim() !== '' ||
+    f.subject !== 'all' ||
+    f.level !== 'all' ||
+    f.status !== 'all' ||
+    f.from !== '' ||
+    f.to !== ''
+  )
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-ES', {
@@ -57,7 +93,17 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
   )
 }
 
-function ExamCard({ exam, onAssign }: { exam: ExamSummary; onAssign: (exam: ExamSummary) => void }) {
+function ExamCard({
+  exam,
+  onAssign,
+  onDuplicate,
+  duplicating,
+}: {
+  exam: ExamSummary
+  onAssign: (exam: ExamSummary) => void
+  onDuplicate: (exam: ExamSummary) => void
+  duplicating: boolean
+}) {
   const navigate = useNavigate()
   return (
     <Card className="relative flex flex-col gap-4 shadow-sm transition-shadow hover:shadow-card">
@@ -100,6 +146,11 @@ function ExamCard({ exam, onAssign }: { exam: ExamSummary; onAssign: (exam: Exam
           onClick={() => onAssign(exam)}
         />
         <CardAction
+          icon={<CopyIcon className="size-4" />}
+          label={duplicating ? 'Duplicando…' : 'Duplicar'}
+          onClick={() => onDuplicate(exam)}
+        />
+        <CardAction
           icon={<GaugeIcon className="size-4" />}
           label="Resultados"
           onClick={() => navigate(`/exams/${exam.examId}/results`)}
@@ -112,19 +163,55 @@ function ExamCard({ exam, onAssign }: { exam: ExamSummary; onAssign: (exam: Exam
 /** Teacher dashboard listing every authored exam as a premium card. */
 export function ExamListView() {
   const navigate = useNavigate()
-  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [assignTarget, setAssignTarget] = useState<ExamSummary | null>(null)
   const { data: exams, isLoading, isError, error } = useExams()
+  const duplicate = useDuplicateExam()
+
+  function handleDuplicate(exam: ExamSummary) {
+    if (duplicate.isPending) return
+    duplicate.mutate(exam.examId, {
+      // Land on the copy's edit form so the teacher can tweak the reactivos.
+      onSuccess: (res) => navigate(`/exams/${res.examId}/edit`),
+    })
+  }
+
+  // Subjects present in the teacher's exams, for the materia dropdown.
+  const subjectOptions = useMemo(
+    () => Array.from(new Set((exams ?? []).map((e) => e.subjectName))).sort((a, b) => a.localeCompare(b)),
+    [exams],
+  )
+  // Academic levels actually present, in the canonical order.
+  const levelOptions = useMemo(() => {
+    const present = new Set((exams ?? []).map((e) => e.academicLevel))
+    return ACADEMIC_LEVELS.filter((l) => present.has(l))
+  }, [exams])
 
   const filtered = useMemo(() => {
     if (!exams) return []
-    const q = query.trim().toLowerCase()
-    if (!q) return exams
-    return exams.filter(
-      (exam) =>
-        exam.title.toLowerCase().includes(q) || exam.subjectName.toLowerCase().includes(q),
-    )
-  }, [exams, query])
+    const q = filters.query.trim().toLowerCase()
+    const from = filters.from ? new Date(`${filters.from}T00:00:00`) : null
+    const to = filters.to ? new Date(`${filters.to}T23:59:59.999`) : null
+    return exams.filter((exam) => {
+      if (q && !exam.title.toLowerCase().includes(q) && !exam.subjectName.toLowerCase().includes(q)) {
+        return false
+      }
+      if (filters.subject !== 'all' && exam.subjectName !== filters.subject) return false
+      if (filters.level !== 'all' && exam.academicLevel !== filters.level) return false
+      if (filters.status === 'published' && !exam.published) return false
+      if (filters.status === 'draft' && exam.published) return false
+      const updated = new Date(exam.updateTimestamp)
+      if (from && updated < from) return false
+      if (to && updated > to) return false
+      return true
+    })
+  }, [exams, filters])
+
+  const filtersActive = hasActiveFilters(filters)
+
+  function patch(partial: Partial<Filters>) {
+    setFilters((prev) => ({ ...prev, ...partial }))
+  }
 
   return (
     <div className="grid gap-8">
@@ -140,18 +227,93 @@ export function ExamListView() {
         </Button>
       </header>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-secondary/50" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Buscar examen por nombre o materia"
-          placeholder="Buscar examen por nombre o materia…"
-          className="font-inter w-full rounded-lg border border-secondary/20 bg-white py-2 pl-9 pr-3 text-secondary placeholder:text-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-base"
-        />
-      </div>
+      {/* Filters */}
+      <Card className="grid gap-4 shadow-sm">
+        <div className="relative">
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-secondary/50" />
+          <input
+            type="search"
+            value={filters.query}
+            onChange={(e) => patch({ query: e.target.value })}
+            aria-label="Buscar examen por nombre o materia"
+            placeholder="Buscar por título o materia…"
+            className="font-inter w-full rounded-lg border border-secondary/20 bg-surface py-2 pl-9 pr-3 text-secondary placeholder:text-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+          />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <SelectField
+            label="Materia"
+            value={filters.subject}
+            onChange={(e) => patch({ subject: e.target.value })}
+          >
+            <option value="all">Todas</option>
+            {subjectOptions.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </SelectField>
+
+          <SelectField
+            label="Nivel"
+            value={filters.level}
+            onChange={(e) => patch({ level: e.target.value as AcademicLevel | 'all' })}
+          >
+            <option value="all">Todos</option>
+            {levelOptions.map((level) => (
+              <option key={level} value={level}>
+                {ACADEMIC_LEVEL_LABELS[level]}
+              </option>
+            ))}
+          </SelectField>
+
+          <SelectField
+            label="Estado"
+            value={filters.status}
+            onChange={(e) => patch({ status: e.target.value as StatusFilter })}
+          >
+            <option value="all">Todos</option>
+            <option value="published">Publicado</option>
+            <option value="draft">Borrador</option>
+          </SelectField>
+
+          <div className="grid grid-cols-2 gap-2">
+            <TextField
+              label="Desde"
+              type="date"
+              value={filters.from}
+              max={filters.to || undefined}
+              onChange={(e) => patch({ from: e.target.value })}
+            />
+            <TextField
+              label="Hasta"
+              type="date"
+              value={filters.to}
+              min={filters.from || undefined}
+              onChange={(e) => patch({ to: e.target.value })}
+            />
+          </div>
+        </div>
+
+        {filtersActive && (
+          <div className="flex items-center justify-between gap-3 border-t border-secondary/10 pt-3">
+            <p className="font-inter text-sm text-secondary/60">
+              {filtered.length} {filtered.length === 1 ? 'examen' : 'exámenes'} encontrados
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)}>
+              Limpiar filtros
+            </Button>
+          </div>
+        )}
+      </Card>
+
+      {duplicate.isError && (
+        <p role="alert" className="font-inter text-sm text-danger">
+          No se pudo duplicar el examen
+          {duplicate.error instanceof ApiError ? `: ${duplicate.error.message}` : '.'}
+        </p>
+      )}
 
       {/* States: loading → error → empty → results */}
       {isLoading ? (
@@ -167,8 +329,13 @@ export function ExamListView() {
         </Card>
       ) : filtered.length === 0 ? (
         <Card className="font-inter grid gap-3 text-secondary/70 shadow-sm">
-          {query.trim() ? (
-            <p>No se encontraron exámenes que coincidan con «{query}».</p>
+          {filtersActive ? (
+            <div className="grid gap-3">
+              <p>No se encontraron exámenes con los filtros aplicados.</p>
+              <Button variant="ghost" className="w-fit" onClick={() => setFilters(EMPTY_FILTERS)}>
+                Limpiar filtros
+              </Button>
+            </div>
           ) : (
             <>
               <p className="font-nunito text-lg font-bold text-secondary">
@@ -184,7 +351,13 @@ export function ExamListView() {
       ) : (
         <div className={cn('grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3')}>
           {filtered.map((exam) => (
-            <ExamCard key={exam.examId} exam={exam} onAssign={setAssignTarget} />
+            <ExamCard
+              key={exam.examId}
+              exam={exam}
+              onAssign={setAssignTarget}
+              onDuplicate={handleDuplicate}
+              duplicating={duplicate.isPending && duplicate.variables === exam.examId}
+            />
           ))}
         </div>
       )}

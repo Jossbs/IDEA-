@@ -56,4 +56,14 @@ public class ExamResultsController {
             @AuthenticationPrincipal AuthenticatedUser teacher) {
         attemptService.review(examId, attemptId, teacher.userId(), request);
     }
+
+    /** Grants a retry: soft-deletes the attempt so the student can take it again. */
+    @PostMapping("/{examId}/attempts/{attemptId}/reset")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetAttempt(
+            @PathVariable UUID examId,
+            @PathVariable UUID attemptId,
+            @AuthenticationPrincipal AuthenticatedUser teacher) {
+        attemptService.resetAttempt(examId, attemptId, teacher.userId());
+    }
 }
