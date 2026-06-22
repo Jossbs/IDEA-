@@ -1,4 +1,4 @@
-/** Difficulty of a question — mirrors the dictionary's `difficulty_level`. */
+/** Difficulty of a question — mirrors the backend `DifficultyLevel` enum. */
 export type DifficultyLevel = 'LOW' | 'MEDIUM' | 'HIGH'
 
 export const DIFFICULTY_LEVELS: DifficultyLevel[] = ['LOW', 'MEDIUM', 'HIGH']
@@ -9,29 +9,63 @@ export const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {
   HIGH: 'Alta',
 }
 
+/** Kind of question — mirrors the backend `QuestionType` enum. */
+export type QuestionType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_TEXT'
+
+export const QUESTION_TYPES: QuestionType[] = [
+  'SINGLE_CHOICE',
+  'MULTIPLE_CHOICE',
+  'TRUE_FALSE',
+  'SHORT_TEXT',
+]
+
+export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
+  SINGLE_CHOICE: 'Opción única',
+  MULTIPLE_CHOICE: 'Opción múltiple',
+  TRUE_FALSE: 'Verdadero / Falso',
+  SHORT_TEXT: 'Respuesta corta',
+}
+
+/** Whether a type uses radio (one correct) or checkbox (many) selection. */
+export function selectionMode(type: QuestionType): 'single' | 'multiple' {
+  return type === 'MULTIPLE_CHOICE' ? 'multiple' : 'single'
+}
+
+/** True for types whose options the teacher edits freely (add/remove). */
+export function hasEditableOptions(type: QuestionType): boolean {
+  return type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE'
+}
+
+/** True for types that carry answer options at all (SHORT_TEXT does not). */
+export function hasOptions(type: QuestionType): boolean {
+  return type !== 'SHORT_TEXT'
+}
+
 /** A single answer option within a question. */
 export interface ExamOption {
   id: string
   text: string
-  /** Whether this option is the correct answer (one per question). */
+  /** Whether this option counts as correct. */
   isCorrect: boolean
 }
 
 /**
- * A question (reactivo) with its answer options.
+ * A question (reactivo) being authored, with its answer options.
  *
- * Note: per the data dictionary, questions belong to a subject (a reusable
- * bank), not to the exam directly. We author them inline here for now and will
- * map them to the subject's bank + an exam-question link once the backend lands.
+ * Carries the full backend contract: `type` drives grading, `points` its weight
+ * and `difficulty` is analytics metadata. `sortOrder` is derived from the list
+ * position at submit time, so it is not stored here.
  */
 export interface ExamQuestion {
   id: string
   text: string
+  type: QuestionType
+  points: number
   difficulty: DifficultyLevel
   options: ExamOption[]
 }
 
-/** The full exam being authored. Local form state for now (no backend yet). */
+/** The full exam being authored (local form state). */
 export interface ExamDraft {
   title: string
   /**
@@ -41,22 +75,50 @@ export interface ExamDraft {
    */
   subjectId: string
   description: string
-  /** Draft vs. published — maps to the dictionary's `is_published`. */
+  /** Draft vs. published — maps to the backend `is_published`. */
   isPublished: boolean
   questions: ExamQuestion[]
 }
 
-/** Minimum / default number of options a new question starts with. */
+/** Minimum / default number of options a new choice question starts with. */
 export const MIN_OPTIONS = 2
 export const DEFAULT_OPTIONS = 4
 
-export function createOption(isCorrect = false): ExamOption {
-  return { id: crypto.randomUUID(), text: '', isCorrect }
+export function createOption(isCorrect = false, text = ''): ExamOption {
+  return { id: crypto.randomUUID(), text, isCorrect }
+}
+
+/** Builds the default option set for a choice question (first one correct). */
+export function createChoiceOptions(): ExamOption[] {
+  return Array.from({ length: DEFAULT_OPTIONS }, (_, i) => createOption(i === 0))
+}
+
+/** Builds the fixed Verdadero/Falso options for a TRUE_FALSE question. */
+export function createTrueFalseOptions(): ExamOption[] {
+  return [createOption(true, 'Verdadero'), createOption(false, 'Falso')]
+}
+
+/** Returns the option set appropriate for a given question type. */
+export function optionsForType(type: QuestionType): ExamOption[] {
+  switch (type) {
+    case 'TRUE_FALSE':
+      return createTrueFalseOptions()
+    case 'SHORT_TEXT':
+      return []
+    default:
+      return createChoiceOptions()
+  }
 }
 
 export function createQuestion(): ExamQuestion {
-  const options = Array.from({ length: DEFAULT_OPTIONS }, (_, i) => createOption(i === 0))
-  return { id: crypto.randomUUID(), text: '', difficulty: 'MEDIUM', options }
+  return {
+    id: crypto.randomUUID(),
+    text: '',
+    type: 'SINGLE_CHOICE',
+    points: 1,
+    difficulty: 'MEDIUM',
+    options: createChoiceOptions(),
+  }
 }
 
 export function createExamDraft(): ExamDraft {
@@ -66,5 +128,57 @@ export function createExamDraft(): ExamDraft {
     description: '',
     isPublished: false,
     questions: [createQuestion()],
+  }
+}
+
+/* ───────────────────────────────────────────────────────────
+ * Backend contract (POST /api/exams) — mirrors the Spring DTOs.
+ * ─────────────────────────────────────────────────────────── */
+
+export interface CreateOptionPayload {
+  optionText: string
+  isCorrect: boolean
+}
+
+export interface CreateQuestionPayload {
+  questionText: string
+  questionType: QuestionType
+  difficultyLevel: DifficultyLevel
+  points: number
+  sortOrder: number
+  options: CreateOptionPayload[]
+}
+
+export interface CreateExamPayload {
+  title: string
+  subjectId: string
+  description: string | null
+  isPublished: boolean
+  questions: CreateQuestionPayload[]
+}
+
+export interface CreateExamResponse {
+  examId: string
+  message: string
+}
+
+/** Maps the local draft to the backend payload (sortOrder = list position). */
+export function toCreateExamPayload(exam: ExamDraft): CreateExamPayload {
+  const description = exam.description.trim()
+  return {
+    title: exam.title.trim(),
+    subjectId: exam.subjectId,
+    description: description === '' ? null : description,
+    isPublished: exam.isPublished,
+    questions: exam.questions.map((q, index) => ({
+      questionText: q.text.trim(),
+      questionType: q.type,
+      difficultyLevel: q.difficulty,
+      points: q.points,
+      sortOrder: index,
+      options: hasOptions(q.type)
+        ? q.options.map((o) => ({ optionText: o.text.trim(), isCorrect: o.isCorrect }))
+        : [],
+    })),
   }
 }
