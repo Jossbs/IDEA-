@@ -85,7 +85,7 @@ export function QuestionCard({
         {/* Type + points */}
         <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
           <SelectField
-            label="Tipo de pregunta"
+            label="Tipo de respuesta"
             value={question.type}
             onChange={(e) => onTypeChange(e.target.value as QuestionType)}
           >

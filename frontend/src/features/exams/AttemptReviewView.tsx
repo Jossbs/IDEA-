@@ -57,18 +57,24 @@ function ReviewForm({
   onDone: () => void
 }) {
   const submit = useSubmitReview(examId, attemptId)
-  const [grades, setGrades] = useState<Record<string, number>>(() =>
-    Object.fromEntries(review.items.map((i) => [i.questionId, 0])),
+  // Empty string = field cleared (counts as 0); lets the teacher erase the value
+  // and type freely instead of fighting a sticky default zero.
+  const [grades, setGrades] = useState<Record<string, number | ''>>(() =>
+    Object.fromEntries(review.items.map((i) => [i.questionId, ''])),
   )
   const [error, setError] = useState<string | null>(null)
 
   const manualTotal = useMemo(
-    () => Object.values(grades).reduce((acc, n) => acc + (n || 0), 0),
+    () => Object.values(grades).reduce<number>((acc, n) => acc + (n || 0), 0),
     [grades],
   )
   const finalScore = review.autoScore + manualTotal
 
   function setPoints(questionId: string, max: number, raw: string) {
+    if (raw === '') {
+      setGrades((prev) => ({ ...prev, [questionId]: '' }))
+      return
+    }
     const n = parseInt(raw, 10)
     const clamped = Number.isNaN(n) ? 0 : Math.max(0, Math.min(max, n))
     setGrades((prev) => ({ ...prev, [questionId]: clamped }))
@@ -78,7 +84,7 @@ function ReviewForm({
     setError(null)
     const payload = review.items.map((i) => ({
       questionId: i.questionId,
-      points: grades[i.questionId] ?? 0,
+      points: grades[i.questionId] || 0,
     }))
     submit.mutate(payload, {
       onSuccess: onDone,
@@ -134,7 +140,8 @@ function ReviewForm({
                   type="number"
                   min={0}
                   max={item.maxPoints}
-                  value={grades[item.questionId] ?? 0}
+                  placeholder="0"
+                  value={grades[item.questionId] ?? ''}
                   onChange={(e) => setPoints(item.questionId, item.maxPoints, e.target.value)}
                   className="w-24 rounded-lg border border-secondary/20 bg-white px-3 py-2 text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
                 />
