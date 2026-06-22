@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { CreateExamView } from '@/features/exams/CreateExamView'
 import { ExamListView } from '@/features/exams/ExamListView'
+import { StudentExamView } from '@/features/exams/StudentExamView'
 import { SubjectsView } from '@/features/subjects/SubjectsView'
 import { AppLayout } from './AppLayout'
 
@@ -15,4 +16,7 @@ export const router = createBrowserRouter([
       { path: 'exams/new', element: <CreateExamView /> },
     ],
   },
+  // Entorno libre de distracciones: la resolución del examen vive FUERA de
+  // AppLayout (sin navbar/sidebar) para aislar por completo al estudiante.
+  { path: '/exam/:examId/take', element: <StudentExamView /> },
 ])
