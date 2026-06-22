@@ -143,6 +143,29 @@ export function createExamDraft(): ExamDraft {
   }
 }
 
+/** Maps a fetched exam detail into editable draft state (for the edit form). */
+export function detailToDraft(detail: ExamDetail): ExamDraft {
+  return {
+    title: detail.title,
+    subjectId: detail.subjectId,
+    description: detail.description ?? '',
+    isPublished: detail.published,
+    studentIds: detail.assignedStudentIds,
+    questions: detail.questions.map((q) => ({
+      id: q.questionId,
+      text: q.questionText,
+      type: q.questionType,
+      points: q.points,
+      difficulty: q.difficultyLevel,
+      options: q.options.map((o) => ({
+        id: o.optionId,
+        text: o.optionText,
+        isCorrect: o.isCorrect,
+      })),
+    })),
+  }
+}
+
 /* ───────────────────────────────────────────────────────────
  * Backend contract (POST /api/exams) — mirrors the Spring DTOs.
  * ─────────────────────────────────────────────────────────── */

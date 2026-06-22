@@ -32,6 +32,7 @@ export const router = createBrowserRouter([
               { path: 'subjects', element: <SubjectsView /> },
               { path: 'exams', element: <ExamListView /> },
               { path: 'exams/new', element: <CreateExamView /> },
+              { path: 'exams/:examId/edit', element: <CreateExamView /> },
               { path: 'exams/:examId/preview', element: <ExamPreviewView /> },
               { path: 'exams/:examId/results', element: <ExamResultsView /> },
             ],

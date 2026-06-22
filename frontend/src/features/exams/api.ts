@@ -47,6 +47,18 @@ export function useCreateExam() {
   })
 }
 
+/** Updates an exam (config + questions + assignments) via PUT /api/exams/{id}. */
+export function useUpdateExam(examId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: CreateExamPayload) => api.put<void>(`/exams/${examId}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [KEY] })
+      queryClient.invalidateQueries({ queryKey: [KEY, examId] })
+    },
+  })
+}
+
 /** The student directory, for assigning exams. */
 export function useStudents() {
   return useQuery({

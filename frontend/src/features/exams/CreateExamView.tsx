@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
 import { SelectField, TextField } from '@/design-system/components/Field'
@@ -7,13 +7,14 @@ import { useSubjects } from '@/features/subjects/api'
 import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
-import { useCreateExam, useStudents } from './api'
+import { useCreateExam, useExam, useStudents, useUpdateExam } from './api'
 import { QuestionCard } from './components/QuestionCard'
 import { StudentMultiSelect } from './components/StudentMultiSelect'
 import {
   createExamDraft,
   createOption,
   createQuestion,
+  detailToDraft,
   hasEditableOptions,
   hasOptions,
   MIN_OPTIONS,
@@ -27,12 +28,28 @@ type Feedback = { type: 'success' | 'error'; message: string }
 
 /** Teacher-facing screen to author a full exam (general config + reactivos). */
 export function CreateExamView() {
+  const { examId } = useParams()
+  const isEdit = Boolean(examId)
+
   const [exam, setExam] = useState<ExamDraft>(createExamDraft)
   const [feedback, setFeedback] = useState<Feedback | null>(null)
+  const [hydrated, setHydrated] = useState(false)
   const { data: subjects, isLoading: subjectsLoading } = useSubjects(false)
   const { data: students } = useStudents()
+  const { data: detail, isLoading: detailLoading } = useExam(examId)
   const createExam = useCreateExam()
+  const updateExam = useUpdateExam(examId)
   const navigate = useNavigate()
+
+  // In edit mode, seed the form from the fetched exam once it arrives.
+  useEffect(() => {
+    if (isEdit && detail && !hydrated) {
+      setExam(detailToDraft(detail))
+      setHydrated(true)
+    }
+  }, [isEdit, detail, hydrated])
+
+  const pending = isEdit ? updateExam.isPending : createExam.isPending
 
   function patch(changes: Partial<ExamDraft>) {
     setExam((prev) => ({ ...prev, ...changes }))
@@ -147,8 +164,23 @@ export function CreateExamView() {
       return
     }
     setFeedback(null)
+    const payload = toCreateExamPayload(exam)
+    const onError = (err: unknown) =>
+      setFeedback({
+        type: 'error',
+        message:
+          err instanceof ApiError
+            ? err.message
+            : 'No se pudo guardar el examen. Inténtalo de nuevo.',
+      })
+
+    if (isEdit) {
+      updateExam.mutate(payload, { onSuccess: () => navigate('/exams'), onError })
+      return
+    }
+
     const wasPublished = exam.isPublished
-    createExam.mutate(toCreateExamPayload(exam), {
+    createExam.mutate(payload, {
       onSuccess: () => {
         setExam(createExamDraft())
         setFeedback({
@@ -158,23 +190,23 @@ export function CreateExamView() {
             : 'Borrador guardado correctamente.',
         })
       },
-      onError: (err) => {
-        setFeedback({
-          type: 'error',
-          message:
-            err instanceof ApiError
-              ? err.message
-              : 'No se pudo guardar el examen. Inténtalo de nuevo.',
-        })
-      },
+      onError,
     })
+  }
+
+  if (isEdit && detailLoading && !hydrated) {
+    return (
+      <div className="font-inter py-16 text-center text-secondary/70">Cargando examen…</div>
+    )
   }
 
   return (
     <div className="grid gap-8 pb-28">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-secondary">Crear examen</h1>
+          <h1 className="font-nunito text-3xl font-extrabold text-secondary">
+            {isEdit ? 'Editar examen' : 'Crear examen'}
+          </h1>
           <p className="font-inter mt-1 text-secondary/70">
             Estructura el examen y agrega tus reactivos manualmente.
           </p>
@@ -303,10 +335,10 @@ export function CreateExamView() {
           variant="accent"
           size="lg"
           onClick={handleSave}
-          disabled={createExam.isPending}
+          disabled={pending}
           className="shadow-lg"
         >
-          {createExam.isPending ? 'Guardando…' : 'Guardar Examen Completo'}
+          {pending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Guardar Examen Completo'}
         </Button>
       </div>
     </div>
