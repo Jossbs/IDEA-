@@ -1,6 +1,7 @@
 package com.idea.attempt.web;
 
 import com.idea.attempt.dto.AttemptResultResponse;
+import com.idea.attempt.dto.StudentAttemptReview;
 import com.idea.attempt.dto.StudentExamCard;
 import com.idea.attempt.dto.SubmitAttemptRequest;
 import com.idea.attempt.service.AttemptService;
@@ -53,5 +54,12 @@ public class StudentExamController {
             @Valid @RequestBody SubmitAttemptRequest request,
             @AuthenticationPrincipal AuthenticatedUser student) {
         return attemptService.submit(id, student.userId(), request);
+    }
+
+    /** The student's own graded attempt with per-question corrections. */
+    @GetMapping("/exams/{id}/result")
+    public StudentAttemptReview result(
+            @PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser student) {
+        return attemptService.getMyResult(id, student.userId());
     }
 }

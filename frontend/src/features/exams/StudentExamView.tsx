@@ -68,7 +68,14 @@ export function StudentExamView() {
   }
 
   if (result) {
-    return <ResultScreen result={result} title={exam.title} onHome={() => navigate('/')} />
+    return (
+      <ResultScreen
+        result={result}
+        title={exam.title}
+        onHome={() => navigate('/')}
+        onReview={() => navigate(`/exam/${examId}/result`)}
+      />
+    )
   }
 
   const question = questions[currentIndex]
@@ -278,10 +285,12 @@ function ResultScreen({
   result,
   title,
   onHome,
+  onReview,
 }: {
   result: AttemptResult
   title: string
   onHome: () => void
+  onReview: () => void
 }) {
   const pending = result.status === 'PENDING_REVIEW'
   return (
@@ -312,9 +321,14 @@ function ResultScreen({
           </p>
         )}
 
-        <Button variant="ghost" className="mt-6" onClick={onHome}>
-          Volver al inicio
-        </Button>
+        <div className="mt-6 flex flex-col gap-2">
+          <Button variant="accent" onClick={onReview}>
+            Ver mis respuestas
+          </Button>
+          <Button variant="ghost" onClick={onHome}>
+            Volver al inicio
+          </Button>
+        </div>
       </section>
     </main>
   )

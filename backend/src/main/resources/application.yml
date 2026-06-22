@@ -26,6 +26,11 @@ spring:
       port: ${REDIS_PORT:6379}
 
 app:
+  # Demo data seeding on startup. Idempotent (skips when students exist); set
+  # APP_SEED_ENABLED=false to disable in real environments.
+  seed:
+    enabled: ${APP_SEED_ENABLED:true}
+
   jwt:
     # HS256 signing key (>= 32 bytes). The default is for local/test only —
     # always override JWT_SECRET in real environments.

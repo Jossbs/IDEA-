@@ -3,14 +3,12 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { ROLE_LABELS } from '@/features/auth/types'
 import { cn } from '@/lib/cn'
 
-type NavItem = { label: string; to: string; ready: boolean }
+type NavItem = { label: string; to: string }
 
 /** Teacher workspace modules (students don't see these). */
 const teacherNav: NavItem[] = [
-  { label: 'Materias', to: '/subjects', ready: true },
-  { label: 'Exámenes', to: '/exams', ready: true },
-  { label: 'Bancos de Preguntas', to: '/question-banks', ready: false },
-  { label: 'Reportes', to: '/reports', ready: false },
+  { label: 'Materias', to: '/subjects' },
+  { label: 'Exámenes', to: '/exams' },
 ]
 
 const linkBase = 'font-inter pb-1 text-base font-medium text-white border-b-2 transition-opacity'
@@ -51,32 +49,22 @@ export function Navbar() {
 
         {/* Navigation */}
         <nav className="ml-auto flex items-center gap-6">
-          {navItems.map((item) =>
-            item.ready ? (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  cn(
-                    linkBase,
-                    isActive
-                      ? 'border-accent opacity-100'
-                      : 'border-transparent opacity-80 hover:opacity-100',
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ) : (
-              <span
-                key={item.to}
-                title="Próximamente"
-                className={cn(linkBase, 'cursor-default border-transparent opacity-60')}
-              >
-                {item.label}
-              </span>
-            ),
-          )}
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  linkBase,
+                  isActive
+                    ? 'border-accent opacity-100'
+                    : 'border-transparent opacity-80 hover:opacity-100',
+                )
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         {/* Signed-in user */}

@@ -71,6 +71,26 @@ export function useCreateExam() {
   })
 }
 
+/** Duplicates an exam as a new draft and returns its id. */
+export function useDuplicateExam() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (examId: string) =>
+      api.post<CreateExamResponse>(`/exams/${examId}/duplicate`, {}),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
+  })
+}
+
+/** Grants a retry by resetting a student's attempt (teacher, owner-scoped). */
+export function useResetAttempt(examId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (attemptId: string) =>
+      api.post<void>(`/exams/${examId}/attempts/${attemptId}/reset`, {}),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [KEY, examId, 'results'] }),
+  })
+}
+
 /** Updates an exam (config + questions + assignments) via PUT /api/exams/{id}. */
 export function useUpdateExam(examId: string | undefined) {
   const queryClient = useQueryClient()

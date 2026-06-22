@@ -49,6 +49,24 @@ export function PowerIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function CopyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2" />
+    </Icon>
+  )
+}
+
+export function RotateIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+      <path d="M3 3v5h5" />
+    </Icon>
+  )
+}
+
 export function XIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

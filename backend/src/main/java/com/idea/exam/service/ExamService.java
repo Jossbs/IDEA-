@@ -27,6 +27,15 @@ public interface ExamService {
      */
     void updateExam(UUID examId, UUID teacherId, CreateExamRequest request);
 
+    /**
+     * Duplicates an exam (config + questions/options) as a new unpublished draft
+     * owned by the same teacher. Student assignments are intentionally not copied.
+     *
+     * @return the identifier of the new draft exam
+     * @throws com.idea.shared.web.exception.ResourceNotFoundException if missing or not theirs
+     */
+    UUID duplicateExam(UUID examId, UUID teacherId);
+
     /** The given teacher's active exams as flat summaries for the dashboard. */
     List<ExamSummaryResponse> listExams(UUID teacherId);
 
