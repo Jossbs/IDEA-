@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/student/**").hasRole("STUDENT")
                         .requestMatchers("/api/exams", "/api/exams/**").hasRole("TEACHER")
                         .requestMatchers("/api/subjects", "/api/subjects/**").hasRole("TEACHER")
                         .anyRequest().authenticated())
