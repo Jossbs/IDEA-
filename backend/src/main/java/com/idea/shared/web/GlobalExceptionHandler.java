@@ -1,5 +1,6 @@
 package com.idea.shared.web;
 
+import com.idea.shared.web.exception.ConflictException;
 import com.idea.shared.web.exception.DuplicateResourceException;
 import com.idea.shared.web.exception.ResourceNotFoundException;
 import java.util.HashMap;
@@ -30,6 +31,13 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleDuplicate(DuplicateResourceException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Duplicate resource");
+        return problem;
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ProblemDetail handleConflict(ConflictException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Conflict");
         return problem;
     }
 
