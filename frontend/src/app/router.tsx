@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { CreateExamView } from '@/features/exams/CreateExamView'
+import { ExamListView } from '@/features/exams/ExamListView'
 import { SubjectsView } from '@/features/subjects/SubjectsView'
 import { AppLayout } from './AppLayout'
 
@@ -10,7 +11,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/subjects" replace /> },
       { path: 'subjects', element: <SubjectsView /> },
-      { path: 'exams', element: <CreateExamView /> },
+      { path: 'exams', element: <ExamListView /> },
+      { path: 'exams/new', element: <CreateExamView /> },
     ],
   },
 ])
