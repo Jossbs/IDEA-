@@ -1,5 +1,6 @@
 package com.idea.exam.repository;
 
+import com.idea.exam.domain.AcademicLevel;
 import com.idea.exam.domain.Subject;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +16,8 @@ public interface SubjectRepository extends JpaRepository<Subject, UUID> {
 
     List<Subject> findAllByOrderBySubjectNameAsc();
 
-    boolean existsBySubjectNameIgnoreCase(String subjectName);
+    boolean existsBySubjectNameIgnoreCaseAndAcademicLevel(String subjectName, AcademicLevel academicLevel);
 
-    boolean existsBySubjectNameIgnoreCaseAndSubjectIdentifierNot(String subjectName, UUID subjectIdentifier);
+    boolean existsBySubjectNameIgnoreCaseAndAcademicLevelAndSubjectIdentifierNot(
+            String subjectName, AcademicLevel academicLevel, UUID subjectIdentifier);
 }

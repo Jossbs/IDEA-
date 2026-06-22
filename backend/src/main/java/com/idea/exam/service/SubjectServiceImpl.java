@@ -40,8 +40,9 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public SubjectResponse create(SubjectRequest request) {
         String name = request.subjectName().trim();
-        if (subjectRepository.existsBySubjectNameIgnoreCase(name)) {
-            throw new DuplicateResourceException("Ya existe una materia con el nombre \"" + name + "\".");
+        if (subjectRepository.existsBySubjectNameIgnoreCaseAndAcademicLevel(name, request.academicLevel())) {
+            throw new DuplicateResourceException(
+                    "Ya existe la materia \"" + name + "\" en ese nivel académico.");
         }
         // saveAndFlush so the DB-generated audit timestamps are populated in the response.
         Subject saved = subjectRepository.saveAndFlush(SubjectMapper.toEntity(request));
@@ -52,8 +53,10 @@ public class SubjectServiceImpl implements SubjectService {
     public SubjectResponse update(UUID subjectIdentifier, SubjectRequest request) {
         Subject subject = getOrThrow(subjectIdentifier);
         String name = request.subjectName().trim();
-        if (subjectRepository.existsBySubjectNameIgnoreCaseAndSubjectIdentifierNot(name, subjectIdentifier)) {
-            throw new DuplicateResourceException("Ya existe otra materia con el nombre \"" + name + "\".");
+        if (subjectRepository.existsBySubjectNameIgnoreCaseAndAcademicLevelAndSubjectIdentifierNot(
+                name, request.academicLevel(), subjectIdentifier)) {
+            throw new DuplicateResourceException(
+                    "Ya existe otra materia \"" + name + "\" en ese nivel académico.");
         }
         SubjectMapper.applyRequest(subject, request);
         // Flush so the refreshed update_timestamp is reflected in the response.
@@ -65,6 +68,11 @@ public class SubjectServiceImpl implements SubjectService {
         Subject subject = getOrThrow(subjectIdentifier);
         subject.setActiveRecord(active);
         return SubjectMapper.toResponse(subjectRepository.saveAndFlush(subject));
+    }
+
+    @Override
+    public void delete(UUID subjectIdentifier) {
+        subjectRepository.delete(getOrThrow(subjectIdentifier));
     }
 
     private Subject getOrThrow(UUID subjectIdentifier) {

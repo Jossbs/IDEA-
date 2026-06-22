@@ -26,4 +26,7 @@ public interface SubjectService {
 
     /** Soft-delete toggle: deactivates or restores a subject. */
     SubjectResponse setActive(UUID subjectIdentifier, boolean active);
+
+    /** Permanently removes a subject. */
+    void delete(UUID subjectIdentifier);
 }
