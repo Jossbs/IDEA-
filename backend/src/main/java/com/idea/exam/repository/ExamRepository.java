@@ -26,6 +26,17 @@ public interface ExamRepository extends JpaRepository<Exam, UUID> {
             ORDER BY e.updateTimestamp DESC""")
     List<ExamSummaryResponse> findSummariesByTeacher(UUID teacherId);
 
+    /** Published, active exams available for students to take (across all teachers). */
+    @Query("""
+            SELECT new com.idea.exam.dto.ExamSummaryResponse(
+                e.examId, e.title, s.subjectName, s.academicLevel,
+                e.published, SIZE(e.questions), e.updateTimestamp)
+            FROM Exam e
+            JOIN Subject s ON s.subjectIdentifier = e.subjectId
+            WHERE e.activeRecord = true AND e.published = true
+            ORDER BY e.updateTimestamp DESC""")
+    List<ExamSummaryResponse> findPublishedSummaries();
+
     /** Fetches one exam with its questions eagerly (options load lazily within the tx). */
     @EntityGraph(attributePaths = "questions")
     Optional<Exam> findWithQuestionsByExamId(UUID examId);
