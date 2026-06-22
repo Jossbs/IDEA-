@@ -41,4 +41,12 @@ public interface ExamRepository extends JpaRepository<Exam, UUID> {
     /** Fetches one exam with its questions eagerly (options load lazily within the tx). */
     @EntityGraph(attributePaths = "questions")
     Optional<Exam> findWithQuestionsByExamId(UUID examId);
+
+    /**
+     * Number of submissions for an exam. Native query against the attempts table
+     * so the exam module stays free of a compile-time dependency on the attempt
+     * module (which already depends on this one).
+     */
+    @Query(value = "SELECT count(*) FROM exam_attempts WHERE exam_id = :examId", nativeQuery = true)
+    long countAttempts(UUID examId);
 }

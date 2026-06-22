@@ -19,6 +19,14 @@ public interface ExamService {
      */
     UUID createExam(CreateExamRequest request, UUID teacherId);
 
+    /**
+     * Replaces an exam's config, questions/options and assignments. Owner-scoped.
+     *
+     * @throws com.idea.shared.web.exception.ResourceNotFoundException if missing or not theirs
+     * @throws com.idea.shared.web.exception.ConflictException if the exam already has submissions
+     */
+    void updateExam(UUID examId, UUID teacherId, CreateExamRequest request);
+
     /** The given teacher's active exams as flat summaries for the dashboard. */
     List<ExamSummaryResponse> listExams(UUID teacherId);
 

@@ -64,6 +64,16 @@ public class ExamController {
         return examService.getExam(id, teacher.userId());
     }
 
+    /** Updates an exam (config + questions/options + assignments). Blocked if it has submissions. */
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void update(
+            @PathVariable UUID id,
+            @Valid @RequestBody CreateExamRequest request,
+            @AuthenticationPrincipal AuthenticatedUser teacher) {
+        examService.updateExam(id, teacher.userId(), request);
+    }
+
     /** Replaces the set of students this exam is assigned to. */
     @PutMapping("/{id}/assignments")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -25,8 +25,23 @@ public final class ExamMapper {
 
     public static Exam toEntity(CreateExamRequest request, UUID teacherId) {
         Exam exam = new Exam();
-        exam.setSubjectId(request.subjectId());
         exam.setTeacherId(teacherId);
+        applyContent(exam, request);
+        return exam;
+    }
+
+    /**
+     * Overwrites an existing exam's config and replaces its question graph from
+     * the request. orphanRemoval deletes the old questions/options; safe only
+     * when the exam has no submissions (the service guards that).
+     */
+    public static void applyUpdate(Exam exam, CreateExamRequest request) {
+        exam.getQuestions().clear();
+        applyContent(exam, request);
+    }
+
+    private static void applyContent(Exam exam, CreateExamRequest request) {
+        exam.setSubjectId(request.subjectId());
         exam.setTitle(request.title().trim());
         exam.setDescription(
                 request.description() == null || request.description().isBlank()
@@ -37,7 +52,6 @@ public final class ExamMapper {
         for (CreateQuestionRequest q : request.questions()) {
             exam.addQuestion(toQuestion(q));
         }
-        return exam;
     }
 
     private static Question toQuestion(CreateQuestionRequest request) {

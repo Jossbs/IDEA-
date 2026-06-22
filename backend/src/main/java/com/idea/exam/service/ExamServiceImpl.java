@@ -17,6 +17,7 @@ import com.idea.exam.mapper.ExamMapper;
 import com.idea.exam.repository.AssignmentRepository;
 import com.idea.exam.repository.ExamRepository;
 import com.idea.exam.repository.SubjectRepository;
+import com.idea.shared.web.exception.ConflictException;
 import com.idea.shared.web.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +54,19 @@ public class ExamServiceImpl implements ExamService {
         UUID examId = examRepository.save(exam).getExamId();
         replaceAssignments(examId, request.studentIds());
         return examId;
+    }
+
+    @Override
+    @Transactional
+    public void updateExam(UUID examId, UUID teacherId, CreateExamRequest request) {
+        Exam exam = ownedExam(examId, teacherId);
+        if (examRepository.countAttempts(examId) > 0) {
+            throw new ConflictException(
+                    "No se puede editar un examen que ya tiene entregas de alumnos.");
+        }
+        ExamMapper.applyUpdate(exam, request);
+        examRepository.save(exam);
+        replaceAssignments(examId, request.studentIds());
     }
 
     @Override
