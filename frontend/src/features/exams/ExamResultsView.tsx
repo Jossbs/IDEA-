@@ -69,6 +69,8 @@ export function ExamResultsView() {
 }
 
 function ResultsContent({ data }: { data: ExamResults }) {
+  const { examId } = useParams()
+  const navigate = useNavigate()
   const { examTitle, subjectName, maxScore, passingScore, results } = data
 
   const stats = useMemo(() => {
@@ -154,7 +156,20 @@ function ResultsContent({ data }: { data: ExamResults }) {
                         <span className="font-inter text-sm text-secondary/40"> / {maxScore}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <GradeBadge result={result} passingScore={passingScore} />
+                        <div className="flex items-center justify-end gap-3">
+                          <GradeBadge result={result} passingScore={passingScore} />
+                          {result.pendingReview && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(`/exams/${examId}/attempts/${result.attemptId}/review`)
+                              }
+                              className="font-inter text-sm font-semibold text-accent transition-colors hover:text-accent-hover"
+                            >
+                              Revisar
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
