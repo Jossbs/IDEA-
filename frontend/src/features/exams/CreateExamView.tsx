@@ -7,8 +7,9 @@ import { useSubjects } from '@/features/subjects/api'
 import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
-import { useCreateExam } from './api'
+import { useCreateExam, useStudents } from './api'
 import { QuestionCard } from './components/QuestionCard'
+import { StudentMultiSelect } from './components/StudentMultiSelect'
 import {
   createExamDraft,
   createOption,
@@ -29,6 +30,7 @@ export function CreateExamView() {
   const [exam, setExam] = useState<ExamDraft>(createExamDraft)
   const [feedback, setFeedback] = useState<Feedback | null>(null)
   const { data: subjects, isLoading: subjectsLoading } = useSubjects(false)
+  const { data: students } = useStudents()
   const createExam = useCreateExam()
   const navigate = useNavigate()
 
@@ -231,6 +233,24 @@ export function CreateExamView() {
             />
             Publicar examen (visible para los estudiantes). Si lo dejas sin marcar, queda como borrador.
           </label>
+        </div>
+      </Card>
+
+      {/* Section A.2 — assign to students */}
+      <Card className="shadow-sm">
+        <div className="grid gap-3">
+          <div>
+            <h2 className="font-nunito text-xl font-bold text-secondary">Asignar a alumnos</h2>
+            <p className="font-inter mt-1 text-sm text-secondary/70">
+              Elige a qué alumnos va dirigido este examen. Puedes dejarlo vacío y asignarlo después.
+            </p>
+          </div>
+          <StudentMultiSelect
+            students={students ?? []}
+            selectedIds={exam.studentIds}
+            onChange={(studentIds) => patch({ studentIds })}
+            className="max-h-64"
+          />
         </div>
       </Card>
 

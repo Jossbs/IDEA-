@@ -6,6 +6,7 @@ import type {
   ExamDetail,
   ExamResults,
   ExamSummary,
+  Student,
 } from './types'
 
 const KEY = 'exams'
@@ -43,5 +44,23 @@ export function useCreateExam() {
     mutationFn: (payload: CreateExamPayload) =>
       api.post<CreateExamResponse>('/exams', payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
+  })
+}
+
+/** The student directory, for assigning exams. */
+export function useStudents() {
+  return useQuery({
+    queryKey: ['students'],
+    queryFn: () => api.get<Student[]>('/students'),
+  })
+}
+
+/** Replaces an exam's assigned students. */
+export function useAssignStudents(examId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (studentIds: string[]) =>
+      api.put<void>(`/exams/${examId}/assignments`, { studentIds }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [KEY, examId] }),
   })
 }

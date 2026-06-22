@@ -4,6 +4,7 @@ import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
 import {
   CalendarIcon,
+  EyeIcon,
   FileTextIcon,
   GaugeIcon,
   PencilIcon,
@@ -14,6 +15,7 @@ import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
 import { useExams } from './api'
+import { AssignDialog } from './components/AssignDialog'
 import type { ExamSummary } from './types'
 
 function formatDate(iso: string): string {
@@ -55,7 +57,7 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
   )
 }
 
-function ExamCard({ exam }: { exam: ExamSummary }) {
+function ExamCard({ exam, onAssign }: { exam: ExamSummary; onAssign: (exam: ExamSummary) => void }) {
   const navigate = useNavigate()
   return (
     <Card className="relative flex flex-col gap-4 shadow-sm transition-shadow hover:shadow-card">
@@ -81,16 +83,22 @@ function ExamCard({ exam }: { exam: ExamSummary }) {
         </span>
       </div>
 
-      <div className="mt-auto flex items-center gap-5 border-t border-secondary/10 pt-3">
+      <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-secondary/10 pt-3">
         <CardAction icon={<PencilIcon className="size-4" />} label="Editar" />
+        <CardAction
+          icon={<EyeIcon className="size-4" />}
+          label="Previsualizar"
+          onClick={() => navigate(`/exams/${exam.examId}/preview`)}
+        />
+        <CardAction
+          icon={<SendIcon className="size-4" />}
+          label="Asignar"
+          onClick={() => onAssign(exam)}
+        />
         <CardAction
           icon={<GaugeIcon className="size-4" />}
           label="Resultados"
           onClick={() => navigate(`/exams/${exam.examId}/results`)}
-        />
-        <CardAction
-          icon={<SendIcon className="size-4" />}
-          label={exam.published ? 'Asignar' : 'Publicar'}
         />
       </div>
     </Card>
@@ -101,6 +109,7 @@ function ExamCard({ exam }: { exam: ExamSummary }) {
 export function ExamListView() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const [assignTarget, setAssignTarget] = useState<ExamSummary | null>(null)
   const { data: exams, isLoading, isError, error } = useExams()
 
   const filtered = useMemo(() => {
@@ -171,9 +180,17 @@ export function ExamListView() {
       ) : (
         <div className={cn('grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3')}>
           {filtered.map((exam) => (
-            <ExamCard key={exam.examId} exam={exam} />
+            <ExamCard key={exam.examId} exam={exam} onAssign={setAssignTarget} />
           ))}
         </div>
+      )}
+
+      {assignTarget && (
+        <AssignDialog
+          examId={assignTarget.examId}
+          examTitle={assignTarget.title}
+          onClose={() => setAssignTarget(null)}
+        />
       )}
     </div>
   )
