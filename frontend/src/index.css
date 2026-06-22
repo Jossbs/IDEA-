@@ -1,21 +1,64 @@
-@import './design-system/tokens.css';
+/* Google Fonts first (@import rules must precede everything else) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@600;700;800&display=swap');
+@import 'tailwindcss';
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ───────────────────────────────────────────────────────────
+ * IDEA — Design tokens (single source of truth)
+ * "Warm, accessible minimalism". Visual identity follows the
+ * 60-30-10 rule; every utility derives from these theme variables.
+ * ─────────────────────────────────────────────────────────── */
+@theme {
+  /* ── Palette (60-30-10) ── */
+  --color-primary: #3a506b; /* slate blue — structure & navigation (60%) */
+  --color-primary-hover: #32465e;
+  --color-primary-active: #2b3c50;
+
+  --color-base: #f9f6f0; /* oat white — page background, reduces eye strain */
+  --color-surface: #ffffff; /* pure white — cards / containers */
+
+  --color-secondary: #4a403a; /* ash brown — text & borders (30%) */
+
+  --color-accent: #d96c4a; /* terracotta — CTAs (10%) */
+  --color-accent-hover: #cb5e3c;
+  --color-accent-active: #b85234;
+
+  --color-success: #5c8065; /* sage green */
+  --color-danger: #b8505e; /* muted crimson */
+
+  /* ── Typography ── */
+  --font-sans: 'Inter', system-ui, sans-serif; /* body / UI default */
+  --font-heading: 'Nunito', system-ui, sans-serif; /* headings */
+  /* Explicit aliases so `font-inter` / `font-nunito` utilities exist too */
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-nunito: 'Nunito', system-ui, sans-serif;
+
+  /* ── Soft elevation (only to lift cards off the base) ── */
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.05);
 }
+/* v4 default radii already satisfy 8–12px: rounded-lg = 8px, rounded-xl = 12px. */
 
-html,
-body,
-#root {
-  height: 100%;
-}
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
 
-body {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-base);
-  background: var(--color-bg);
-  color: var(--color-text);
-  -webkit-font-smoothing: antialiased;
+  body {
+    @apply bg-base text-secondary font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold text-secondary;
+  }
+
+  /* Accessibility: a single, consistent keyboard focus ring everywhere. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-base;
+  }
 }
