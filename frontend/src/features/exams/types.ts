@@ -207,6 +207,27 @@ export interface ExamDetail {
   questions: QuestionDetail[]
 }
 
+/* ── Results (GET /api/exams/{id}/results) ── */
+
+export type AttemptStatus = 'GRADED' | 'PENDING_REVIEW'
+
+export interface ResultEntry {
+  studentName: string
+  submittedAt: string
+  score: number
+  status: AttemptStatus
+  pendingReview: boolean
+}
+
+export interface ExamResults {
+  examId: string
+  examTitle: string
+  subjectName: string
+  maxScore: number
+  passingScore: number
+  results: ResultEntry[]
+}
+
 /** Maps the local draft to the backend payload (sortOrder = list position). */
 export function toCreateExamPayload(exam: ExamDraft): CreateExamPayload {
   const description = exam.description.trim()

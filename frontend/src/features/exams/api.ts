@@ -4,6 +4,7 @@ import type {
   CreateExamPayload,
   CreateExamResponse,
   ExamDetail,
+  ExamResults,
   ExamSummary,
 } from './types'
 
@@ -22,6 +23,15 @@ export function useExam(examId: string | undefined) {
   return useQuery({
     queryKey: [KEY, examId],
     queryFn: () => api.get<ExamDetail>(`/exams/${examId}`),
+    enabled: Boolean(examId),
+  })
+}
+
+/** Fetches the results panel for an exam (teacher, owner-scoped). */
+export function useExamResults(examId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, examId, 'results'],
+    queryFn: () => api.get<ExamResults>(`/exams/${examId}/results`),
     enabled: Boolean(examId),
   })
 }

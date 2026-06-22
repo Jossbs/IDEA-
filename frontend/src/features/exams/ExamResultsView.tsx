@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
 import {
   AwardIcon,
@@ -7,57 +9,10 @@ import {
   GaugeIcon,
   UsersIcon,
 } from '@/design-system/icons'
+import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
-
-/* ───────────────────────────────────────────────────────────
- * Tipos (resultados de evaluación)
- * ─────────────────────────────────────────────────────────── */
-
-/** Una entrega calificada automáticamente por el sistema. */
-export interface StudentResult {
-  id: string
-  studentName: string
-  /** ISO datetime de la entrega. */
-  submittedAt: string
-  /** Puntaje obtenido sobre `maxScore`. */
-  score: number
-}
-
-/** Resumen del examen cuyos resultados se revisan. */
-export interface ExamResultsSummary {
-  id: string
-  examTitle: string
-  subject: string
-  /** Puntaje máximo posible (escala). */
-  maxScore: number
-  /** Calificación mínima aprobatoria. */
-  passingScore: number
-  results: StudentResult[]
-}
-
-/* ───────────────────────────────────────────────────────────
- * Datos simulados (mock) para poblar la tabla y evaluar contraste.
- * Se reemplazará por el GET de resultados cuando exista el endpoint.
- * ─────────────────────────────────────────────────────────── */
-const MOCK_RESULTS: ExamResultsSummary = {
-  id: 'exam-1',
-  examTitle: 'Examen Parcial 1 — Cinemática',
-  subject: 'Física · Bachillerato',
-  maxScore: 10,
-  passingScore: 6,
-  results: [
-    { id: 'r1', studentName: 'Ana Sofía Ramírez', submittedAt: '2026-06-20T09:14:00', score: 9.5 },
-    { id: 'r2', studentName: 'Diego Hernández Cruz', submittedAt: '2026-06-20T09:21:00', score: 7.0 },
-    { id: 'r3', studentName: 'Valeria Mendoza León', submittedAt: '2026-06-20T09:08:00', score: 10 },
-    { id: 'r4', studentName: 'Carlos Eduardo Pérez', submittedAt: '2026-06-20T09:33:00', score: 4.5 },
-    { id: 'r5', studentName: 'María Fernanda Soto', submittedAt: '2026-06-20T09:18:00', score: 8.5 },
-    { id: 'r6', studentName: 'Luis Ángel Torres', submittedAt: '2026-06-20T09:41:00', score: 5.5 },
-    { id: 'r7', studentName: 'Regina Castillo Vega', submittedAt: '2026-06-20T09:26:00', score: 6.0 },
-    { id: 'r8', studentName: 'Emiliano Núñez Díaz', submittedAt: '2026-06-20T09:37:00', score: 3.0 },
-    { id: 'r9', studentName: 'Paola Jiménez Rosas', submittedAt: '2026-06-20T09:12:00', score: 8.0 },
-    { id: 'r10', studentName: 'Santiago Flores Mora', submittedAt: '2026-06-20T09:29:00', score: 7.5 },
-  ],
-}
+import { useExamResults } from './api'
+import type { ExamResults, ResultEntry } from './types'
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString('es-ES', {
@@ -68,60 +23,76 @@ function formatDateTime(iso: string): string {
   })
 }
 
-/** Redondea a un decimal y normaliza -0 → 0. */
+/** Rounds to one decimal and normalizes -0 → 0. */
 function round1(n: number): number {
   return Math.round(n * 10) / 10 || 0
 }
 
-interface ExamResultsViewProps {
-  /** Inyectable para test/storybook; por defecto usa los resultados simulados. */
-  data?: ExamResultsSummary
+/**
+ * Teacher's results panel for an exam: quick KPIs + the grades table.
+ * Auto-graded scores; rows with short-text answers stay "Pendiente" until
+ * the teacher reviews them.
+ */
+export function ExamResultsView() {
+  const { examId } = useParams()
+  const navigate = useNavigate()
+  const { data, isLoading, isError, error } = useExamResults(examId)
+
+  return (
+    <div className="grid gap-8">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-nunito text-3xl font-extrabold text-secondary">
+            Resultados de la Evaluación
+          </h1>
+          <p className="font-inter mt-1 text-secondary/70">
+            Calificaciones generadas automáticamente tras la aplicación del examen.
+          </p>
+        </div>
+        <Button variant="ghost" onClick={() => navigate('/exams')}>
+          ← Volver a Mis Evaluaciones
+        </Button>
+      </header>
+
+      {isLoading ? (
+        <Card className="font-inter text-secondary/70 shadow-sm">Cargando resultados…</Card>
+      ) : isError || !data ? (
+        <Card className="font-inter text-danger shadow-sm">
+          No se pudieron cargar los resultados
+          {error instanceof ApiError ? `: ${error.message}` : '.'}
+        </Card>
+      ) : (
+        <ResultsContent data={data} />
+      )}
+    </div>
+  )
 }
 
-/**
- * Panel de resultados de un examen para el docente.
- *
- * Analítica limpia: KPIs rápidos arriba + tabla de calificaciones abajo.
- * Sin gráficas complejas; foco en los datos duros para asentar promedios.
- */
-export function ExamResultsView({ data = MOCK_RESULTS }: ExamResultsViewProps) {
-  const { examTitle, subject, maxScore, passingScore, results } = data
+function ResultsContent({ data }: { data: ExamResults }) {
+  const { examTitle, subjectName, maxScore, passingScore, results } = data
 
   const stats = useMemo(() => {
     const total = results.length
     const sum = results.reduce((acc, r) => acc + r.score, 0)
     const average = total > 0 ? sum / total : 0
-    const passed = results.filter((r) => r.score >= passingScore).length
+    const passed = results.filter((r) => !r.pendingReview && r.score >= passingScore).length
+    const pending = results.filter((r) => r.pendingReview).length
     const passRate = total > 0 ? Math.round((passed / total) * 100) : 0
-    return { total, average, passed, passRate }
+    return { total, average, passed, passRate, pending }
   }, [results, passingScore])
 
   return (
-    <div className="grid gap-8">
-      {/* ── Encabezado ── */}
-      <header>
-        <h1 className="font-nunito text-3xl font-extrabold text-secondary">
-          Resultados de la Evaluación
-        </h1>
-        <p className="font-inter mt-1 text-secondary/60">
-          Calificaciones generadas automáticamente tras la aplicación del examen.
-        </p>
-      </header>
-
-      {/* ── Sección superior: KPIs rápidos ── */}
+    <>
+      {/* KPIs */}
       <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           icon={<FileTextIcon className="size-5" />}
           label="Examen"
           value={examTitle}
-          hint={subject}
+          hint={subjectName}
           emphasizeValue={false}
         />
-        <KpiCard
-          icon={<UsersIcon className="size-5" />}
-          label="Alumnos evaluados"
-          value={String(stats.total)}
-        />
+        <KpiCard icon={<UsersIcon className="size-5" />} label="Alumnos evaluados" value={String(stats.total)} />
         <KpiCard
           icon={<GaugeIcon className="size-5" />}
           label="Promedio general"
@@ -131,36 +102,43 @@ export function ExamResultsView({ data = MOCK_RESULTS }: ExamResultsViewProps) {
           icon={<AwardIcon className="size-5" />}
           label="Tasa de aprobación"
           value={`${stats.passRate}%`}
-          hint={`${stats.passed} de ${stats.total} aprobados`}
+          hint={
+            stats.pending > 0
+              ? `${stats.passed} aprobados · ${stats.pending} pendientes`
+              : `${stats.passed} de ${stats.total} aprobados`
+          }
         />
       </section>
 
-      {/* ── Sección inferior: tabla de calificaciones ── */}
+      {/* Grades table */}
       <section className="grid gap-4">
         <div className="flex items-center justify-between">
           <h2 className="font-nunito text-xl font-bold text-secondary">Calificaciones</h2>
-          <span className="font-inter text-sm text-secondary/50">
+          <span className="font-inter text-sm text-secondary/60">
             Aprobatoria mínima: {passingScore} / {maxScore}
           </span>
         </div>
 
-        <Card className="overflow-hidden p-0 shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="font-inter border-b border-secondary/10 bg-secondary/[0.03] text-xs font-semibold uppercase tracking-wide text-secondary/50">
-                  <th className="px-6 py-3">Alumno</th>
-                  <th className="px-6 py-3">Entrega</th>
-                  <th className="px-6 py-3 text-right">Puntaje</th>
-                  <th className="px-6 py-3 text-right">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="font-inter">
-                {results.map((result) => {
-                  const passed = result.score >= passingScore
-                  return (
+        {results.length === 0 ? (
+          <Card className="font-inter text-secondary/70 shadow-sm">
+            Aún no hay entregas para este examen.
+          </Card>
+        ) : (
+          <Card className="overflow-hidden p-0 shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="font-inter border-b border-secondary/10 bg-secondary/[0.03] text-xs font-semibold uppercase tracking-wide text-secondary/60">
+                    <th className="px-6 py-3">Alumno</th>
+                    <th className="px-6 py-3">Entrega</th>
+                    <th className="px-6 py-3 text-right">Puntaje</th>
+                    <th className="px-6 py-3 text-right">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="font-inter">
+                  {results.map((result, i) => (
                     <tr
-                      key={result.id}
+                      key={`${result.studentName}-${i}`}
                       className="border-b border-secondary/[0.06] transition-colors last:border-0 hover:bg-secondary/[0.02]"
                     >
                       <td className="px-6 py-4">
@@ -173,36 +151,28 @@ export function ExamResultsView({ data = MOCK_RESULTS }: ExamResultsViewProps) {
                         <span className="font-nunito text-lg font-bold tabular-nums text-primary">
                           {round1(result.score)}
                         </span>
-                        <span className="font-inter text-sm text-secondary/40">
-                          {' '}
-                          / {maxScore}
-                        </span>
+                        <span className="font-inter text-sm text-secondary/40"> / {maxScore}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <GradeBadge passed={passed} />
+                        <GradeBadge result={result} passingScore={passingScore} />
                       </td>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
       </section>
-    </div>
+    </>
   )
 }
-
-/* ───────────────────────────────────────────────────────────
- * Subcomponentes
- * ─────────────────────────────────────────────────────────── */
 
 interface KpiCardProps {
   icon: React.ReactNode
   label: string
   value: string
   hint?: string
-  /** Si true, el valor usa número grande en Azul Pizarra; si false, texto compacto. */
   emphasizeValue?: boolean
 }
 
@@ -215,7 +185,6 @@ function KpiCard({ icon, label, value, hint, emphasizeValue = true }: KpiCardPro
         </span>
         <span className="font-inter text-sm font-medium text-secondary/60">{label}</span>
       </div>
-
       <p
         className={cn(
           'font-nunito font-extrabold text-primary',
@@ -225,14 +194,20 @@ function KpiCard({ icon, label, value, hint, emphasizeValue = true }: KpiCardPro
       >
         {value}
       </p>
-
       {hint && <p className="font-inter -mt-1 text-sm text-secondary/50">{hint}</p>}
     </Card>
   )
 }
 
-function GradeBadge({ passed }: { passed: boolean }) {
-  return passed ? (
+function GradeBadge({ result, passingScore }: { result: ResultEntry; passingScore: number }) {
+  if (result.pendingReview) {
+    return (
+      <span className="font-inter inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent">
+        Pendiente de revisión
+      </span>
+    )
+  }
+  return result.score >= passingScore ? (
     <span className="font-inter inline-flex items-center gap-1.5 rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">
       <CheckCircleIcon className="size-3.5" />
       Aprobado
