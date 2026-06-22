@@ -2,11 +2,16 @@ package com.idea.exam.web;
 
 import com.idea.exam.dto.CreateExamRequest;
 import com.idea.exam.dto.CreateExamResponse;
+import com.idea.exam.dto.ExamDetailResponse;
+import com.idea.exam.dto.ExamSummaryResponse;
 import com.idea.exam.service.ExamService;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,5 +40,17 @@ public class ExamController {
         URI location = URI.create("/api/exams/" + examId);
         return ResponseEntity.created(location)
                 .body(new CreateExamResponse(examId, "Examen creado correctamente."));
+    }
+
+    /** Lists the active exams as dashboard summaries. */
+    @GetMapping
+    public List<ExamSummaryResponse> list() {
+        return examService.listExams();
+    }
+
+    /** Full detail (questions + options) of a single exam. */
+    @GetMapping("/{id}")
+    public ExamDetailResponse getOne(@PathVariable UUID id) {
+        return examService.getExam(id);
     }
 }

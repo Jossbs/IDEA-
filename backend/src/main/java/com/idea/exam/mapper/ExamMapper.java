@@ -3,9 +3,14 @@ package com.idea.exam.mapper;
 import com.idea.exam.domain.Exam;
 import com.idea.exam.domain.Question;
 import com.idea.exam.domain.QuestionOption;
+import com.idea.exam.domain.Subject;
 import com.idea.exam.dto.CreateExamRequest;
 import com.idea.exam.dto.CreateOptionRequest;
 import com.idea.exam.dto.CreateQuestionRequest;
+import com.idea.exam.dto.ExamDetailResponse;
+import com.idea.exam.dto.OptionResponse;
+import com.idea.exam.dto.QuestionResponse;
+import java.util.List;
 
 /**
  * Builds the {@link Exam} object graph from the create request. The bidirectional
@@ -52,5 +57,38 @@ public final class ExamMapper {
         option.setOptionText(request.optionText().trim());
         option.setCorrect(request.correct());
         return option;
+    }
+
+    /**
+     * Full teacher-facing read model. The subject is passed in (resolved by id)
+     * since the exam references it by identifier, not as a JPA relationship.
+     */
+    public static ExamDetailResponse toDetailResponse(Exam exam, Subject subject) {
+        List<QuestionResponse> questions = exam.getQuestions().stream()
+                .map(ExamMapper::toQuestionResponse)
+                .toList();
+        return new ExamDetailResponse(
+                exam.getExamId(),
+                exam.getTitle(),
+                exam.getDescription(),
+                subject.getSubjectIdentifier(),
+                subject.getSubjectName(),
+                subject.getAcademicLevel(),
+                exam.isPublished(),
+                questions);
+    }
+
+    private static QuestionResponse toQuestionResponse(Question question) {
+        List<OptionResponse> options = question.getOptions().stream()
+                .map(o -> new OptionResponse(o.getOptionId(), o.getOptionText(), o.isCorrect()))
+                .toList();
+        return new QuestionResponse(
+                question.getQuestionId(),
+                question.getQuestionText(),
+                question.getQuestionType(),
+                question.getDifficultyLevel(),
+                question.getPoints(),
+                question.getSortOrder(),
+                options);
     }
 }

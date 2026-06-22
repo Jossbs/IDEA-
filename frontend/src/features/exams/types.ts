@@ -1,3 +1,5 @@
+import type { AcademicLevel } from '@/features/subjects/types'
+
 /** Difficulty of a question — mirrors the backend `DifficultyLevel` enum. */
 export type DifficultyLevel = 'LOW' | 'MEDIUM' | 'HIGH'
 
@@ -160,6 +162,49 @@ export interface CreateExamPayload {
 export interface CreateExamResponse {
   examId: string
   message: string
+}
+
+/* ───────────────────────────────────────────────────────────
+ * Read models (GET /api/exams · /api/exams/{id}) — mirror the Spring DTOs.
+ * ─────────────────────────────────────────────────────────── */
+
+/** Flat summary for the teacher dashboard list. */
+export interface ExamSummary {
+  examId: string
+  title: string
+  subjectName: string
+  academicLevel: AcademicLevel
+  published: boolean
+  questionCount: number
+  updateTimestamp: string
+}
+
+export interface OptionDetail {
+  optionId: string
+  optionText: string
+  isCorrect: boolean
+}
+
+export interface QuestionDetail {
+  questionId: string
+  questionText: string
+  questionType: QuestionType
+  difficultyLevel: DifficultyLevel
+  points: number
+  sortOrder: number
+  options: OptionDetail[]
+}
+
+/** Full teacher-facing exam detail (edit/preview foundation). */
+export interface ExamDetail {
+  examId: string
+  title: string
+  description: string | null
+  subjectId: string
+  subjectName: string
+  academicLevel: AcademicLevel
+  published: boolean
+  questions: QuestionDetail[]
 }
 
 /** Maps the local draft to the backend payload (sortOrder = list position). */
