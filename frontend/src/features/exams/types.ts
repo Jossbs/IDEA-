@@ -79,7 +79,16 @@ export interface ExamDraft {
   description: string
   /** Draft vs. published — maps to the backend `is_published`. */
   isPublished: boolean
+  /** Student user ids this exam is directed to (optional). */
+  studentIds: string[]
   questions: ExamQuestion[]
+}
+
+/** A student in the teacher's directory (GET /api/students). */
+export interface Student {
+  userId: string
+  email: string
+  fullName: string
 }
 
 /** Minimum / default number of options a new choice question starts with. */
@@ -129,6 +138,7 @@ export function createExamDraft(): ExamDraft {
     subjectId: '',
     description: '',
     isPublished: false,
+    studentIds: [],
     questions: [createQuestion()],
   }
 }
@@ -156,6 +166,7 @@ export interface CreateExamPayload {
   subjectId: string
   description: string | null
   isPublished: boolean
+  studentIds: string[]
   questions: CreateQuestionPayload[]
 }
 
@@ -204,6 +215,7 @@ export interface ExamDetail {
   subjectName: string
   academicLevel: AcademicLevel
   published: boolean
+  assignedStudentIds: string[]
   questions: QuestionDetail[]
 }
 
@@ -236,6 +248,7 @@ export function toCreateExamPayload(exam: ExamDraft): CreateExamPayload {
     subjectId: exam.subjectId,
     description: description === '' ? null : description,
     isPublished: exam.isPublished,
+    studentIds: exam.studentIds,
     questions: exam.questions.map((q, index) => ({
       questionText: q.text.trim(),
       questionType: q.type,

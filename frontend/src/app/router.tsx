@@ -3,6 +3,7 @@ import { LoginView } from '@/features/auth/LoginView'
 import { RegisterView } from '@/features/auth/RegisterView'
 import { CreateExamView } from '@/features/exams/CreateExamView'
 import { ExamListView } from '@/features/exams/ExamListView'
+import { ExamPreviewView } from '@/features/exams/ExamPreviewView'
 import { ExamResultsView } from '@/features/exams/ExamResultsView'
 import { StudentExamView } from '@/features/exams/StudentExamView'
 import { SubjectsView } from '@/features/subjects/SubjectsView'
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
               { path: 'subjects', element: <SubjectsView /> },
               { path: 'exams', element: <ExamListView /> },
               { path: 'exams/new', element: <CreateExamView /> },
+              { path: 'exams/:examId/preview', element: <ExamPreviewView /> },
               { path: 'exams/:examId/results', element: <ExamResultsView /> },
             ],
           },
