@@ -48,6 +48,14 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    /** Service-level argument validation (e.g. manual grade exceeds the max). */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid request");
+        return problem;
+    }
+
     /** Malformed JSON or an invalid enum value in the request body. */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleUnreadable(HttpMessageNotReadableException ex) {

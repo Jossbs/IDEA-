@@ -167,7 +167,8 @@ public class ExamServiceImpl implements ExamService {
                 .filter(QuestionOption::isCorrect)
                 .map(QuestionOption::getOptionId)
                 .collect(Collectors.toSet());
-        return new GradingQuestion(q.getQuestionId(), q.getQuestionType(), q.getPoints(), correctIds);
+        return new GradingQuestion(
+                q.getQuestionId(), q.getQuestionText(), q.getQuestionType(), q.getPoints(), correctIds);
     }
 
     private static ResourceNotFoundException notFound(UUID examId) {

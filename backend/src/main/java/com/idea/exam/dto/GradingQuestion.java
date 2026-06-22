@@ -10,6 +10,7 @@ import java.util.UUID;
  */
 public record GradingQuestion(
         UUID questionId,
+        String questionText,
         QuestionType questionType,
         int points,
         Set<UUID> correctOptionIds) {
