@@ -32,7 +32,9 @@ public class Subject extends BaseEntity {
     @Column(name = "subject_identifier", nullable = false, updatable = false)
     private UUID subjectIdentifier;
 
-    @Column(name = "subject_name", nullable = false, length = 100, unique = true)
+    // Uniqueness is on (subject_name, academic_level) — see the migration's
+    // case-insensitive composite index, not a single-column constraint.
+    @Column(name = "subject_name", nullable = false, length = 100)
     private String subjectName;
 
     @Enumerated(EnumType.STRING)

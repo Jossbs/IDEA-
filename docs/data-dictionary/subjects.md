@@ -5,7 +5,7 @@ Catalog of academic subjects an exam can belong to.
 | Field Name                | PostgreSQL Type | Constraints & Keys        | UX & Business Logic Purpose                                                        |
 |---------------------------|-----------------|---------------------------|-----------------------------------------------------------------------------------|
 | `subject_identifier`      | UUID            | Primary Key, Not Null     | Secure, non-sequential global identifier.                                          |
-| `subject_name`            | VARCHAR(100)    | Unique, Not Null          | Main subject name (e.g. "Mathematics").                                            |
+| `subject_name`            | VARCHAR(100)    | Not Null                  | Main subject name (e.g. "Mathematics"). Unique per `academic_level` (case-insensitive). |
 | `academic_level`          | VARCHAR(50)     | Not Null                  | Maps to a dropdown in React (e.g. High School, University) to prevent typing errors.|
 | `is_active_record`        | BOOLEAN         | Not Null, Default: TRUE   | Maps to a "Deactivate" toggle instead of a destructive delete button.             |
 | `creation_timestamp`      | TIMESTAMP       | Not Null, Default: NOW()  | System-managed audit trail.                                                        |
