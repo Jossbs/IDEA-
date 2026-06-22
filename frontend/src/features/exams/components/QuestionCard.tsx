@@ -1,7 +1,8 @@
 import { Card } from '@/design-system/components/Card'
 import { TrashIcon } from '@/design-system/icons'
-import { MIN_OPTIONS } from '../types'
-import type { ExamQuestion } from '../types'
+import { cn } from '@/lib/cn'
+import { DIFFICULTY_LABELS, DIFFICULTY_LEVELS, MIN_OPTIONS } from '../types'
+import type { DifficultyLevel, ExamQuestion } from '../types'
 import { OptionRow } from './OptionRow'
 
 type QuestionCardProps = {
@@ -10,11 +11,19 @@ type QuestionCardProps = {
   /** False for the last remaining question, so the exam always has at least one. */
   canRemove: boolean
   onTextChange: (text: string) => void
+  onDifficultyChange: (difficulty: DifficultyLevel) => void
   onOptionTextChange: (optionId: string, text: string) => void
   onMarkCorrect: (optionId: string) => void
   onAddOption: () => void
   onRemoveOption: (optionId: string) => void
   onRemove: () => void
+}
+
+/** Color-coded styles for the selected difficulty pill. */
+const difficultyActive: Record<DifficultyLevel, string> = {
+  LOW: 'bg-success text-white border-success',
+  MEDIUM: 'bg-accent text-white border-accent',
+  HIGH: 'bg-danger text-white border-danger',
 }
 
 /** Self-contained card for authoring one question and its options. */
@@ -23,6 +32,7 @@ export function QuestionCard({
   index,
   canRemove,
   onTextChange,
+  onDifficultyChange,
   onOptionTextChange,
   onMarkCorrect,
   onAddOption,
@@ -55,6 +65,32 @@ export function QuestionCard({
           rows={2}
           className="font-inter w-full resize-y rounded-lg border border-secondary/20 bg-white px-3 py-2 text-secondary placeholder:text-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
         />
+
+        {/* Difficulty — color-coded segmented control */}
+        <div className="flex items-center gap-3">
+          <span className="font-inter text-sm font-medium text-secondary/60">Dificultad</span>
+          <div className="flex gap-2">
+            {DIFFICULTY_LEVELS.map((level) => {
+              const active = question.difficulty === level
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => onDifficultyChange(level)}
+                  aria-pressed={active}
+                  className={cn(
+                    'font-inter rounded-full border px-3 py-1 text-sm font-medium transition-colors',
+                    active
+                      ? difficultyActive[level]
+                      : 'border-secondary/20 text-secondary/70 hover:border-secondary/40',
+                  )}
+                >
+                  {DIFFICULTY_LABELS[level]}
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
         <div className="grid gap-2">
           <span className="font-inter text-sm font-medium text-secondary/60">
