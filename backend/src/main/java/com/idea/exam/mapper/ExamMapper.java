@@ -65,7 +65,8 @@ public final class ExamMapper {
      * Full teacher-facing read model. The subject is passed in (resolved by id)
      * since the exam references it by identifier, not as a JPA relationship.
      */
-    public static ExamDetailResponse toDetailResponse(Exam exam, Subject subject) {
+    public static ExamDetailResponse toDetailResponse(
+            Exam exam, Subject subject, List<UUID> assignedStudentIds) {
         List<QuestionResponse> questions = exam.getQuestions().stream()
                 .map(ExamMapper::toQuestionResponse)
                 .toList();
@@ -77,6 +78,7 @@ public final class ExamMapper {
                 subject.getSubjectName(),
                 subject.getAcademicLevel(),
                 exam.isPublished(),
+                assignedStudentIds,
                 questions);
     }
 

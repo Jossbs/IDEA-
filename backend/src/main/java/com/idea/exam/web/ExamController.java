@@ -1,6 +1,7 @@
 package com.idea.exam.web;
 
 import com.idea.auth.security.AuthenticatedUser;
+import com.idea.exam.dto.AssignStudentsRequest;
 import com.idea.exam.dto.CreateExamRequest;
 import com.idea.exam.dto.CreateExamResponse;
 import com.idea.exam.dto.ExamDetailResponse;
@@ -10,13 +11,16 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -53,10 +57,20 @@ public class ExamController {
         return examService.listExams(teacher.userId());
     }
 
-    /** Full detail (questions + options) of one of the teacher's exams. */
+    /** Full detail (questions + options + assigned students) of one of the teacher's exams. */
     @GetMapping("/{id}")
     public ExamDetailResponse getOne(
             @PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser teacher) {
         return examService.getExam(id, teacher.userId());
+    }
+
+    /** Replaces the set of students this exam is assigned to. */
+    @PutMapping("/{id}/assignments")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void assign(
+            @PathVariable UUID id,
+            @Valid @RequestBody AssignStudentsRequest request,
+            @AuthenticationPrincipal AuthenticatedUser teacher) {
+        examService.assignStudents(id, teacher.userId(), request.studentIds());
     }
 }

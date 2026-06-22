@@ -16,5 +16,6 @@ public record ExamDetailResponse(
         String subjectName,
         AcademicLevel academicLevel,
         boolean published,
+        List<UUID> assignedStudentIds,
         List<QuestionResponse> questions) {
 }

@@ -29,8 +29,15 @@ public interface ExamService {
      */
     ExamDetailResponse getExam(UUID examId, UUID teacherId);
 
-    /** Published, active exams available for students to take. */
-    List<ExamSummaryResponse> listPublishedExams();
+    /** Published, active exams assigned to (and takeable by) the given student. */
+    List<ExamSummaryResponse> listAssignedPublishedExams(UUID studentId);
+
+    /**
+     * Replaces the set of students an exam is assigned to. Owner-scoped.
+     *
+     * @throws com.idea.shared.web.exception.ResourceNotFoundException if missing or not theirs
+     */
+    void assignStudents(UUID examId, UUID teacherId, List<UUID> studentIds);
 
     /**
      * Sanitized exam (no answer key) for a student to take. Must be published.

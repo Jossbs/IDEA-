@@ -34,7 +34,10 @@ public record CreateExamRequest(
 
         @NotEmpty(message = "El examen debe tener al menos una pregunta.")
         @Valid
-        List<CreateQuestionRequest> questions) {
+        List<CreateQuestionRequest> questions,
+
+        /** Students this exam is directed to (optional; can be assigned later). */
+        List<UUID> studentIds) {
 
     /** Null-safe accessor — an unspecified flag means "draft". */
     public boolean published() {

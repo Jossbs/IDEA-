@@ -1,13 +1,16 @@
 package com.idea.auth.service;
 
+import com.idea.auth.domain.Role;
 import com.idea.auth.domain.User;
 import com.idea.auth.dto.AuthResponse;
 import com.idea.auth.dto.LoginRequest;
 import com.idea.auth.dto.RegisterRequest;
+import com.idea.auth.dto.UserResponse;
 import com.idea.auth.mapper.AuthMapper;
 import com.idea.auth.repository.UserRepository;
 import com.idea.auth.security.JwtService;
 import com.idea.shared.web.exception.DuplicateResourceException;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +30,14 @@ public class AuthServiceImpl implements AuthService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> listStudents() {
+        return userRepository.findByRoleAndActiveRecordTrueOrderByFullNameAsc(Role.STUDENT).stream()
+                .map(AuthMapper::toUserResponse)
+                .toList();
     }
 
     @Override
