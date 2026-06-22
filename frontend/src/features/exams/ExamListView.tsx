@@ -84,7 +84,11 @@ function ExamCard({ exam, onAssign }: { exam: ExamSummary; onAssign: (exam: Exam
       </div>
 
       <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-secondary/10 pt-3">
-        <CardAction icon={<PencilIcon className="size-4" />} label="Editar" />
+        <CardAction
+          icon={<PencilIcon className="size-4" />}
+          label="Editar"
+          onClick={() => navigate(`/exams/${exam.examId}/edit`)}
+        />
         <CardAction
           icon={<EyeIcon className="size-4" />}
           label="Previsualizar"
