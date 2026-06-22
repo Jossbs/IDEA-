@@ -1,8 +1,30 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/apiClient'
-import type { CreateExamPayload, CreateExamResponse } from './types'
+import type {
+  CreateExamPayload,
+  CreateExamResponse,
+  ExamDetail,
+  ExamSummary,
+} from './types'
 
 const KEY = 'exams'
+
+/** Lists the teacher's exams (active records) as dashboard summaries. */
+export function useExams() {
+  return useQuery({
+    queryKey: [KEY],
+    queryFn: () => api.get<ExamSummary[]>('/exams'),
+  })
+}
+
+/** Fetches a single exam's full detail. Disabled until an id is provided. */
+export function useExam(examId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, examId],
+    queryFn: () => api.get<ExamDetail>(`/exams/${examId}`),
+    enabled: Boolean(examId),
+  })
+}
 
 /** Creates a full exam (with nested questions and options) via POST /api/exams. */
 export function useCreateExam() {
@@ -10,7 +32,6 @@ export function useCreateExam() {
   return useMutation({
     mutationFn: (payload: CreateExamPayload) =>
       api.post<CreateExamResponse>('/exams', payload),
-    // Forward-compatible: refresh the (future) exam list once it reads from the API.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
   })
 }

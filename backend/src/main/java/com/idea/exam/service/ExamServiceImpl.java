@@ -1,9 +1,15 @@
 package com.idea.exam.service;
 
 import com.idea.exam.domain.Exam;
+import com.idea.exam.domain.Subject;
 import com.idea.exam.dto.CreateExamRequest;
+import com.idea.exam.dto.ExamDetailResponse;
+import com.idea.exam.dto.ExamSummaryResponse;
 import com.idea.exam.mapper.ExamMapper;
 import com.idea.exam.repository.ExamRepository;
+import com.idea.exam.repository.SubjectRepository;
+import com.idea.shared.web.exception.ResourceNotFoundException;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExamServiceImpl implements ExamService {
 
     private final ExamRepository examRepository;
+    private final SubjectRepository subjectRepository;
 
-    public ExamServiceImpl(ExamRepository examRepository) {
+    public ExamServiceImpl(ExamRepository examRepository, SubjectRepository subjectRepository) {
         this.examRepository = examRepository;
+        this.subjectRepository = subjectRepository;
     }
 
     /**
@@ -28,5 +36,24 @@ public class ExamServiceImpl implements ExamService {
     public UUID createExam(CreateExamRequest request) {
         Exam exam = ExamMapper.toEntity(request);
         return examRepository.save(exam).getExamId();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ExamSummaryResponse> listExams() {
+        return examRepository.findSummaries();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ExamDetailResponse getExam(UUID examId) {
+        Exam exam = examRepository.findWithQuestionsByExamId(examId)
+                .filter(Exam::isActiveRecord)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el examen con identificador " + examId + "."));
+        Subject subject = subjectRepository.findById(exam.getSubjectId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró la materia del examen " + examId + "."));
+        return ExamMapper.toDetailResponse(exam, subject);
     }
 }
