@@ -247,11 +247,35 @@ export interface ExamDetail {
 export type AttemptStatus = 'GRADED' | 'PENDING_REVIEW'
 
 export interface ResultEntry {
+  attemptId: string
   studentName: string
   submittedAt: string
   score: number
   status: AttemptStatus
   pendingReview: boolean
+}
+
+/* ── Manual review (GET/POST /api/exams/{id}/attempts/{attemptId}/review) ── */
+
+export interface ReviewItem {
+  questionId: string
+  questionText: string
+  maxPoints: number
+  answerText: string
+}
+
+export interface AttemptReview {
+  attemptId: string
+  studentName: string
+  autoScore: number
+  maxScore: number
+  status: AttemptStatus
+  items: ReviewItem[]
+}
+
+export interface QuestionGrade {
+  questionId: string
+  points: number
 }
 
 export interface ExamResults {

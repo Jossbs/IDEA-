@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/apiClient'
 import type {
+  AttemptReview,
   CreateExamPayload,
   CreateExamResponse,
   ExamDetail,
   ExamResults,
   ExamSummary,
+  QuestionGrade,
   Student,
 } from './types'
 
@@ -34,6 +36,28 @@ export function useExamResults(examId: string | undefined) {
     queryKey: [KEY, examId, 'results'],
     queryFn: () => api.get<ExamResults>(`/exams/${examId}/results`),
     enabled: Boolean(examId),
+  })
+}
+
+/** Fetches one attempt's short-text answers to grade manually. */
+export function useAttemptReview(examId: string | undefined, attemptId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, examId, 'attempts', attemptId],
+    queryFn: () => api.get<AttemptReview>(`/exams/${examId}/attempts/${attemptId}/review`),
+    enabled: Boolean(examId && attemptId),
+  })
+}
+
+/** Submits manual grades for an attempt's short-text answers. */
+export function useSubmitReview(examId: string | undefined, attemptId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (grades: QuestionGrade[]) =>
+      api.post<void>(`/exams/${examId}/attempts/${attemptId}/review`, { grades }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [KEY, examId, 'results'] })
+      queryClient.invalidateQueries({ queryKey: [KEY, examId, 'attempts', attemptId] })
+    },
   })
 }
 

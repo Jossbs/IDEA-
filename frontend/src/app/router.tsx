@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { LoginView } from '@/features/auth/LoginView'
 import { RegisterView } from '@/features/auth/RegisterView'
+import { AttemptReviewView } from '@/features/exams/AttemptReviewView'
 import { CreateExamView } from '@/features/exams/CreateExamView'
 import { ExamListView } from '@/features/exams/ExamListView'
 import { ExamPreviewView } from '@/features/exams/ExamPreviewView'
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
               { path: 'exams/:examId/edit', element: <CreateExamView /> },
               { path: 'exams/:examId/preview', element: <ExamPreviewView /> },
               { path: 'exams/:examId/results', element: <ExamResultsView /> },
+              {
+                path: 'exams/:examId/attempts/:attemptId/review',
+                element: <AttemptReviewView />,
+              },
             ],
           },
         ],
