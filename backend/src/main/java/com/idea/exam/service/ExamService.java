@@ -10,19 +10,20 @@ import java.util.UUID;
 public interface ExamService {
 
     /**
-     * Persists an exam with its questions and options atomically.
+     * Persists an exam (with its questions and options) atomically, owned by the
+     * given teacher.
      *
      * @return the identifier of the newly created exam
      */
-    UUID createExam(CreateExamRequest request);
+    UUID createExam(CreateExamRequest request, UUID teacherId);
 
-    /** Active exams as flat summaries for the teacher dashboard. */
-    List<ExamSummaryResponse> listExams();
+    /** The given teacher's active exams as flat summaries for the dashboard. */
+    List<ExamSummaryResponse> listExams(UUID teacherId);
 
     /**
-     * Full detail (questions + options) of a single active exam.
+     * Full detail (questions + options) of a single active exam owned by the teacher.
      *
-     * @throws com.idea.shared.web.exception.ResourceNotFoundException if it does not exist
+     * @throws com.idea.shared.web.exception.ResourceNotFoundException if it does not exist or is not theirs
      */
-    ExamDetailResponse getExam(UUID examId);
+    ExamDetailResponse getExam(UUID examId, UUID teacherId);
 }

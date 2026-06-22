@@ -11,6 +11,7 @@ import com.idea.exam.dto.ExamDetailResponse;
 import com.idea.exam.dto.OptionResponse;
 import com.idea.exam.dto.QuestionResponse;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Builds the {@link Exam} object graph from the create request. The bidirectional
@@ -22,9 +23,10 @@ public final class ExamMapper {
     private ExamMapper() {
     }
 
-    public static Exam toEntity(CreateExamRequest request) {
+    public static Exam toEntity(CreateExamRequest request, UUID teacherId) {
         Exam exam = new Exam();
         exam.setSubjectId(request.subjectId());
+        exam.setTeacherId(teacherId);
         exam.setTitle(request.title().trim());
         exam.setDescription(
                 request.description() == null || request.description().isBlank()
