@@ -37,6 +37,7 @@ public final class ExamMapper {
         Question question = new Question();
         question.setQuestionText(request.questionText().trim());
         question.setQuestionType(request.questionType());
+        question.setDifficultyLevel(request.difficultyLevel());
         question.setPoints(request.points());
         question.setSortOrder(request.sortOrder());
 

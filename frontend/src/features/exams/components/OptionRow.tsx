@@ -5,8 +5,12 @@ import type { ExamOption } from '../types'
 type OptionRowProps = {
   option: ExamOption
   index: number
-  /** Radio group name — the owning question id, so one option is correct per question. */
+  /** Radio group name — the owning question id, so radios are grouped per question. */
   groupName: string
+  /** 'single' → radio (one correct); 'multiple' → checkbox (many correct). */
+  mode: 'single' | 'multiple'
+  /** False for fixed options (Verdadero/Falso), which can't be retyped. */
+  editableText: boolean
   canRemove: boolean
   onTextChange: (text: string) => void
   onMarkCorrect: () => void
@@ -14,13 +18,16 @@ type OptionRowProps = {
 }
 
 /**
- * One answer option: a "correct answer" radio (sage green when selected),
- * the answer text input, and a subtle remove-option icon button.
+ * One answer option: a "correct answer" control (radio for single-choice,
+ * checkbox for multiple-choice), the answer text input, and a subtle
+ * remove-option icon button.
  */
 export function OptionRow({
   option,
   index,
   groupName,
+  mode,
+  editableText,
   canRemove,
   onTextChange,
   onMarkCorrect,
@@ -34,8 +41,8 @@ export function OptionRow({
       )}
     >
       <input
-        type="radio"
-        name={groupName}
+        type={mode === 'multiple' ? 'checkbox' : 'radio'}
+        name={mode === 'multiple' ? undefined : groupName}
         checked={option.isCorrect}
         onChange={onMarkCorrect}
         aria-label={`Marcar la opción ${index + 1} como correcta`}
@@ -46,18 +53,23 @@ export function OptionRow({
         value={option.text}
         onChange={(e) => onTextChange(e.target.value)}
         placeholder={`Opción ${index + 1}`}
-        className="font-inter flex-1 bg-transparent text-secondary outline-none placeholder:text-secondary/40"
+        readOnly={!editableText}
+        className={cn(
+          'font-inter flex-1 bg-transparent text-secondary outline-none placeholder:text-secondary/40',
+          !editableText && 'cursor-default text-secondary/70',
+        )}
       />
-      <button
-        type="button"
-        onClick={onRemove}
-        disabled={!canRemove}
-        aria-label={`Eliminar opción ${index + 1}`}
-        title="Eliminar opción"
-        className="text-secondary/50 transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:text-secondary/50"
-      >
-        <XIcon />
-      </button>
+      {canRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Eliminar opción ${index + 1}`}
+          title="Eliminar opción"
+          className="text-secondary/50 transition-colors hover:text-accent"
+        >
+          <XIcon />
+        </button>
+      )}
     </div>
   )
 }
