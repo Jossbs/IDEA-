@@ -155,9 +155,9 @@ function ResultsContent({ data }: { data: ExamResults }) {
                   </tr>
                 </thead>
                 <tbody className="font-inter">
-                  {results.map((result, i) => (
+                  {results.map((result) => (
                     <tr
-                      key={`${result.studentName}-${i}`}
+                      key={result.attemptId}
                       className="border-b border-secondary/[0.06] transition-colors last:border-0 hover:bg-secondary/[0.02]"
                     >
                       <td className="px-6 py-4">

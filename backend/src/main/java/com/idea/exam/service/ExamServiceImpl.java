@@ -108,10 +108,11 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     @Transactional(readOnly = true)
-    public StudentExamResponse getExamForStudent(UUID examId) {
+    public StudentExamResponse getExamForStudent(UUID examId, UUID studentId) {
         Exam exam = examRepository.findWithQuestionsByExamId(examId)
                 .filter(Exam::isActiveRecord)
                 .filter(Exam::isPublished)
+                .filter(e -> assignmentRepository.existsByExamIdAndStudentId(examId, studentId))
                 .orElseThrow(() -> notFound(examId));
 
         List<StudentQuestionResponse> questions = exam.getQuestions().stream()
@@ -126,6 +127,12 @@ public class ExamServiceImpl implements ExamService {
                 .toList();
 
         return new StudentExamResponse(exam.getExamId(), exam.getTitle(), null, questions);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isAssignedTo(UUID examId, UUID studentId) {
+        return assignmentRepository.existsByExamIdAndStudentId(examId, studentId);
     }
 
     @Override

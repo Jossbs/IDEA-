@@ -45,3 +45,13 @@ yarn-error.log*
 # ── Database dumps ──
 *.sql.bak
 *.dump
+
+# ── Local working artifacts dropped at the repo root ──
+# (source-of-truth docs live under docs/; these are scratch copies)
+/*.pdf
+/*.xlsx
+/*.xls
+/*.csv
+/*.png
+/*.jpg
+/*.jpeg

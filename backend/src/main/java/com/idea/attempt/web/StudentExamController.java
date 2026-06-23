@@ -43,8 +43,9 @@ public class StudentExamController {
 
     /** Sanitized exam (no answer key) to render the runner. */
     @GetMapping("/exams/{id}")
-    public StudentExamResponse take(@PathVariable UUID id) {
-        return examService.getExamForStudent(id);
+    public StudentExamResponse take(
+            @PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser student) {
+        return examService.getExamForStudent(id, student.userId());
     }
 
     /** Submits the answers, auto-grades, and returns the result. */
