@@ -11,5 +11,6 @@ public record StudentAttemptReview(
         AttemptStatus status,
         int score,
         int maxScore,
+        int passingScore,
         List<StudentAnswerReview> questions) {
 }

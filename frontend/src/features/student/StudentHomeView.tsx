@@ -2,12 +2,38 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
-import { CheckCircleIcon, ClockIcon, EyeIcon, FileTextIcon, SearchIcon } from '@/design-system/icons'
+import {
+  AwardIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  EyeIcon,
+  FileTextIcon,
+  GaugeIcon,
+  SearchIcon,
+} from '@/design-system/icons'
 import { useAuth } from '@/features/auth/AuthContext'
 import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
+import { cn } from '@/lib/cn'
 import { useAvailableExams } from './api'
 import type { StudentExamCard } from './types'
+
+/** Rounds to one decimal and normalizes -0 → 0. */
+function round1(n: number): number {
+  return Math.round(n * 10) / 10 || 0
+}
+
+/** Formats an ISO deadline for the student cards. */
+function formatDueDate(iso: string): string {
+  return new Date(iso).toLocaleString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 /** Student dashboard: every assigned exam — pending to take and already graded. */
 export function StudentHomeView() {
@@ -81,6 +107,7 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
   const navigate = useNavigate()
   const graded = exam.attemptStatus === 'GRADED'
   const pending = exam.attemptStatus === 'PENDING_REVIEW'
+  const accredited = graded && exam.score != null && exam.score >= exam.passingScore
 
   return (
     <Card className="flex flex-col gap-4 shadow-sm">
@@ -91,20 +118,49 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
         </p>
       </div>
 
-      <span className="font-inter inline-flex items-center gap-1.5 text-sm text-secondary/70">
-        <FileTextIcon className="size-4" />
-        {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
-      </span>
+      <div className="font-inter flex flex-col gap-1.5 text-sm text-secondary/70">
+        <span className="inline-flex items-center gap-1.5">
+          <FileTextIcon className="size-4" />
+          {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <GaugeIcon className="size-4" />
+          Vale {exam.totalPoints} pts · acreditas con {exam.passingScore}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarIcon className="size-4" />
+          {exam.dueAt ? `Entrega: ${formatDueDate(exam.dueAt)}` : 'Sin fecha de entrega'}
+        </span>
+        {exam.averageScore != null && (
+          <span className="inline-flex items-center gap-1.5">
+            <AwardIcon className="size-4" />
+            Promedio del grupo: {round1(exam.averageScore)} / {exam.totalPoints}
+          </span>
+        )}
+      </div>
 
-      {/* Graded: show the score. Pending: note the review is in progress. */}
+      {/* Graded: show the score and whether the student accredited. */}
       {graded && (
-        <div className="rounded-lg bg-success/10 px-4 py-3">
-          <p className="font-inter text-xs font-semibold uppercase tracking-wide text-success">
-            Calificación
+        <div className={cn('rounded-lg px-4 py-3', accredited ? 'bg-success/10' : 'bg-danger/10')}>
+          <p
+            className={cn(
+              'font-inter text-xs font-semibold uppercase tracking-wide',
+              accredited ? 'text-success' : 'text-danger',
+            )}
+          >
+            {accredited ? 'Acreditado' : 'No acreditado'}
           </p>
-          <p className="font-nunito mt-0.5 text-2xl font-extrabold tabular-nums text-success">
+          <p
+            className={cn(
+              'font-nunito mt-0.5 text-2xl font-extrabold tabular-nums',
+              accredited ? 'text-success' : 'text-danger',
+            )}
+          >
             {exam.score}
             <span className="text-base font-bold text-secondary/40"> / {exam.maxScore}</span>
+          </p>
+          <p className="font-inter mt-0.5 text-xs text-secondary/60">
+            Mínimo para acreditar: {exam.passingScore}
           </p>
         </div>
       )}

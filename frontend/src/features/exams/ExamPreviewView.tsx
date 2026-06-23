@@ -8,6 +8,17 @@ import { useExam } from './api'
 import { DIFFICULTY_LABELS, QUESTION_TYPE_LABELS } from './types'
 import type { QuestionDetail } from './types'
 
+/** Formats an ISO date-time for the deadline chip. */
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 /** Read-only preview of an exam as authored (correct answers highlighted). */
 export function ExamPreviewView() {
   const { examId } = useParams()
@@ -55,6 +66,19 @@ export function ExamPreviewView() {
               <p className="font-inter text-sm text-secondary/70">
                 {exam.subjectName} · {exam.questions.length} preguntas
               </p>
+              <div className="font-inter mt-2 flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
+                  Vale {exam.totalPoints} {exam.totalPoints === 1 ? 'punto' : 'puntos'}
+                </span>
+                <span className="rounded-full bg-success/15 px-2.5 py-1 font-medium text-success">
+                  Acredita con {exam.passingScore} / {exam.totalPoints}
+                </span>
+                {exam.dueAt && (
+                  <span className="rounded-full bg-accent/15 px-2.5 py-1 font-medium text-accent">
+                    Entrega: {formatDateTime(exam.dueAt)}
+                  </span>
+                )}
+              </div>
               {exam.description && (
                 <p className="font-inter mt-2 text-secondary/80">{exam.description}</p>
               )}

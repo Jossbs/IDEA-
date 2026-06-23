@@ -79,9 +79,20 @@ export interface ExamDraft {
   description: string
   /** Draft vs. published — maps to the backend `is_published`. */
   isPublished: boolean
+  /** Declared total the exam is worth; must equal the sum of question points. */
+  totalPoints: number
+  /** Minimum score to accredit (nota de acreditación). */
+  passingScore: number
+  /** Delivery deadline as a `datetime-local` value ('' = none). */
+  dueAt: string
   /** Student user ids this exam is directed to (optional). */
   studentIds: string[]
   questions: ExamQuestion[]
+}
+
+/** Sum of the points distributed across the exam's questions. */
+export function distributedPoints(questions: ExamQuestion[]): number {
+  return questions.reduce((sum, q) => sum + (Number.isFinite(q.points) ? q.points : 0), 0)
 }
 
 /** A student in the teacher's directory (GET /api/students). */
@@ -138,9 +149,17 @@ export function createExamDraft(): ExamDraft {
     subjectId: '',
     description: '',
     isPublished: false,
+    totalPoints: 10,
+    passingScore: 6,
+    dueAt: '',
     studentIds: [],
     questions: [createQuestion()],
   }
+}
+
+/** Trims an ISO date-time ("2026-06-25T14:30:00") to a `datetime-local` value. */
+export function toDateTimeLocal(iso: string | null): string {
+  return iso ? iso.slice(0, 16) : ''
 }
 
 /** Maps a fetched exam detail into editable draft state (for the edit form). */
@@ -150,6 +169,9 @@ export function detailToDraft(detail: ExamDetail): ExamDraft {
     subjectId: detail.subjectId,
     description: detail.description ?? '',
     isPublished: detail.published,
+    totalPoints: detail.totalPoints,
+    passingScore: detail.passingScore,
+    dueAt: toDateTimeLocal(detail.dueAt),
     studentIds: detail.assignedStudentIds,
     questions: detail.questions.map((q) => ({
       id: q.questionId,
@@ -189,6 +211,10 @@ export interface CreateExamPayload {
   subjectId: string
   description: string | null
   isPublished: boolean
+  totalPoints: number
+  passingScore: number
+  /** ISO `datetime-local` string, or null when no deadline. */
+  dueAt: string | null
   studentIds: string[]
   questions: CreateQuestionPayload[]
 }
@@ -211,6 +237,11 @@ export interface ExamSummary {
   published: boolean
   questionCount: number
   updateTimestamp: string
+  totalPoints: number
+  passingScore: number
+  dueAt: string | null
+  /** Average submitted score across attempts; null when there are none yet. */
+  averageScore: number | null
 }
 
 export interface OptionDetail {
@@ -238,6 +269,9 @@ export interface ExamDetail {
   subjectName: string
   academicLevel: AcademicLevel
   published: boolean
+  totalPoints: number
+  passingScore: number
+  dueAt: string | null
   assignedStudentIds: string[]
   questions: QuestionDetail[]
 }
@@ -295,6 +329,9 @@ export function toCreateExamPayload(exam: ExamDraft): CreateExamPayload {
     subjectId: exam.subjectId,
     description: description === '' ? null : description,
     isPublished: exam.isPublished,
+    totalPoints: exam.totalPoints,
+    passingScore: exam.passingScore,
+    dueAt: exam.dueAt.trim() === '' ? null : exam.dueAt,
     studentIds: exam.studentIds,
     questions: exam.questions.map((q, index) => ({
       questionText: q.text.trim(),

@@ -14,5 +14,6 @@ public record GradingExam(
         UUID teacherId,
         boolean published,
         int maxScore,
+        int passingScore,
         List<GradingQuestion> questions) {
 }

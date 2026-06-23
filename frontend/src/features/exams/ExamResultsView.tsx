@@ -90,8 +90,9 @@ function ResultsContent({ data }: { data: ExamResults }) {
     const passed = results.filter((r) => !r.pendingReview && r.score >= passingScore).length
     const pending = results.filter((r) => r.pendingReview).length
     const passRate = total > 0 ? Math.round((passed / total) * 100) : 0
-    return { total, average, passed, passRate, pending }
-  }, [results, passingScore])
+    const averagePct = maxScore > 0 ? Math.round((average / maxScore) * 100) : 0
+    return { total, average, averagePct, passed, passRate, pending }
+  }, [results, passingScore, maxScore])
 
   return (
     <>
@@ -107,8 +108,13 @@ function ResultsContent({ data }: { data: ExamResults }) {
         <KpiCard icon={<UsersIcon className="size-5" />} label="Alumnos evaluados" value={String(stats.total)} />
         <KpiCard
           icon={<GaugeIcon className="size-5" />}
-          label="Promedio general"
+          label="Calificación promedio"
           value={`${round1(stats.average)} / ${maxScore}`}
+          hint={
+            stats.total > 0
+              ? `${stats.averagePct}% · ${stats.average >= passingScore ? 'acredita' : 'no acredita'} (mín. ${passingScore})`
+              : 'Sin entregas todavía'
+          }
         />
         <KpiCard
           icon={<AwardIcon className="size-5" />}

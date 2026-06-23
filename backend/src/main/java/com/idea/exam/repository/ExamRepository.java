@@ -1,6 +1,7 @@
 package com.idea.exam.repository;
 
 import com.idea.exam.domain.Exam;
+import com.idea.exam.dto.ExamAverage;
 import com.idea.exam.dto.ExamSummaryResponse;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,8 @@ public interface ExamRepository extends JpaRepository<Exam, UUID> {
     @Query("""
             SELECT new com.idea.exam.dto.ExamSummaryResponse(
                 e.examId, e.title, s.subjectName, s.academicLevel,
-                e.published, SIZE(e.questions), e.updateTimestamp)
+                e.published, SIZE(e.questions), e.updateTimestamp,
+                e.totalPoints, e.passingScore, e.dueAt)
             FROM Exam e
             JOIN Subject s ON s.subjectIdentifier = e.subjectId
             WHERE e.activeRecord = true AND e.teacherId = :teacherId
@@ -30,13 +32,27 @@ public interface ExamRepository extends JpaRepository<Exam, UUID> {
     @Query("""
             SELECT new com.idea.exam.dto.ExamSummaryResponse(
                 e.examId, e.title, s.subjectName, s.academicLevel,
-                e.published, SIZE(e.questions), e.updateTimestamp)
+                e.published, SIZE(e.questions), e.updateTimestamp,
+                e.totalPoints, e.passingScore, e.dueAt)
             FROM Exam e
             JOIN Subject s ON s.subjectIdentifier = e.subjectId
             JOIN ExamAssignment a ON a.examId = e.examId
             WHERE e.activeRecord = true AND e.published = true AND a.studentId = :studentId
             ORDER BY e.updateTimestamp DESC""")
     List<ExamSummaryResponse> findPublishedSummariesAssignedTo(UUID studentId);
+
+    /**
+     * Average submitted score (auto + manual) per exam across its active attempts.
+     * Exams without attempts are simply absent from the result. References the
+     * attempt entity by JPQL name (no compile-time module dependency).
+     */
+    @Query("""
+            SELECT new com.idea.exam.dto.ExamAverage(
+                a.examId, AVG(a.autoScore + COALESCE(a.manualScore, 0)))
+            FROM ExamAttempt a
+            WHERE a.activeRecord = true AND a.examId IN :examIds
+            GROUP BY a.examId""")
+    List<ExamAverage> findAverageScores(List<UUID> examIds);
 
     /** Fetches one exam with its questions eagerly (options load lazily within the tx). */
     @EntityGraph(attributePaths = "questions")

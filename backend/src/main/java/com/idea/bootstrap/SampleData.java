@@ -73,7 +73,13 @@ final class SampleData {
             boolean published,
             List<UUID> studentIds,
             CreateQuestionRequest... questions) {
+        // Total = sum of question points; accreditation defaults to 60% (≥ 1).
+        int totalPoints = List.of(questions).stream()
+                .mapToInt(CreateQuestionRequest::points)
+                .sum();
+        int passingScore = Math.max(1, (int) Math.ceil(totalPoints * 0.6));
         return new CreateExamRequest(
-                title, subjectId, description, published, List.of(questions), studentIds);
+                title, subjectId, description, published,
+                totalPoints, passingScore, null, List.of(questions), studentIds);
     }
 }

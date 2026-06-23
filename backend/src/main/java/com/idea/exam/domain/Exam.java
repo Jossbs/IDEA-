@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +50,18 @@ public class Exam extends BaseEntity {
 
     @Column(name = "is_published", nullable = false)
     private boolean published;
+
+    /** Declared total the exam is worth; equals the sum of its question points. */
+    @Column(name = "total_points", nullable = false)
+    private int totalPoints;
+
+    /** Minimum score to accredit the exam (the "promedio"/nota de acreditación). */
+    @Column(name = "passing_score", nullable = false)
+    private int passingScore;
+
+    /** Optional delivery deadline shown to students; null means no due date. */
+    @Column(name = "due_at")
+    private LocalDateTime dueAt;
 
     @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
