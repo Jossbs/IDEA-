@@ -42,6 +42,10 @@ public final class ExamMapper {
         copy.setTitle(newTitle);
         copy.setDescription(source.getDescription());
         copy.setPublished(false);
+        copy.setTotalPoints(source.getTotalPoints());
+        copy.setPassingScore(source.getPassingScore());
+        // The deadline is event-specific; a fresh draft starts without one.
+        copy.setDueAt(null);
         for (Question question : source.getQuestions()) {
             copy.addQuestion(cloneQuestion(question));
         }
@@ -82,6 +86,9 @@ public final class ExamMapper {
                         ? null
                         : request.description().trim());
         exam.setPublished(request.published());
+        exam.setTotalPoints(request.totalPoints());
+        exam.setPassingScore(request.passingScore());
+        exam.setDueAt(request.dueAt());
 
         for (CreateQuestionRequest q : request.questions()) {
             exam.addQuestion(toQuestion(q));
@@ -126,6 +133,9 @@ public final class ExamMapper {
                 subject.getSubjectName(),
                 subject.getAcademicLevel(),
                 exam.isPublished(),
+                exam.getTotalPoints(),
+                exam.getPassingScore(),
+                exam.getDueAt(),
                 assignedStudentIds,
                 questions);
     }

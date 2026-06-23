@@ -17,6 +17,7 @@ import com.idea.attempt.dto.StudentExamCard;
 import com.idea.attempt.dto.SubmitAttemptRequest;
 import com.idea.attempt.repository.AttemptRepository;
 import com.idea.exam.domain.QuestionType;
+import com.idea.exam.dto.ExamSummaryResponse;
 import com.idea.exam.dto.GradingExam;
 import com.idea.exam.dto.GradingQuestion;
 import com.idea.exam.service.ExamService;
@@ -51,17 +52,23 @@ public class AttemptServiceImpl implements AttemptService {
         Map<UUID, ExamAttempt> attempts =
                 attemptRepository.findByStudentIdAndActiveRecordTrue(studentId).stream()
                         .collect(Collectors.toMap(ExamAttempt::getExamId, a -> a, (a, b) -> a));
-        return examService.listAssignedPublishedExams(studentId).stream()
+        List<ExamSummaryResponse> exams = examService.listAssignedPublishedExams(studentId);
+        Map<UUID, Double> averages = examService.averageScores(
+                exams.stream().map(ExamSummaryResponse::examId).toList());
+        return exams.stream()
                 .map(e -> {
+                    Double avg = averages.get(e.examId());
                     ExamAttempt a = attempts.get(e.examId());
                     if (a == null) {
                         return new StudentExamCard(
                                 e.examId(), e.title(), e.subjectName(), e.academicLevel(),
-                                e.questionCount(), false, null, null, null);
+                                e.questionCount(), e.totalPoints(), e.passingScore(), e.dueAt(),
+                                false, null, null, null, avg);
                     }
                     return new StudentExamCard(
                             e.examId(), e.title(), e.subjectName(), e.academicLevel(),
-                            e.questionCount(), true, a.getStatus(), totalScore(a), a.getMaxScore());
+                            e.questionCount(), e.totalPoints(), e.passingScore(), e.dueAt(),
+                            true, a.getStatus(), totalScore(a), a.getMaxScore(), avg);
                 })
                 .toList();
     }
@@ -113,7 +120,8 @@ public class AttemptServiceImpl implements AttemptService {
         ExamAttempt saved = attemptRepository.save(attempt);
 
         return new AttemptResultResponse(
-                saved.getAttemptId(), saved.getStatus(), autoScore, exam.maxScore());
+                saved.getAttemptId(), saved.getStatus(), autoScore,
+                exam.maxScore(), exam.passingScore());
     }
 
     @Override
@@ -146,7 +154,7 @@ public class AttemptServiceImpl implements AttemptService {
 
         return new StudentAttemptReview(
                 exam.examId(), exam.title(), attempt.getStatus(),
-                totalScore(attempt), exam.maxScore(), questions);
+                totalScore(attempt), exam.maxScore(), exam.passingScore(), questions);
     }
 
     /** Maps one graded question to the student's correction view. */
@@ -181,7 +189,7 @@ public class AttemptServiceImpl implements AttemptService {
             throw new ResourceNotFoundException(
                     "No se encontró el examen con identificador " + examId + ".");
         }
-        int passingScore = (int) Math.ceil(exam.maxScore() * 0.6);
+        int passingScore = exam.passingScore();
         List<ResultEntry> results = attemptRepository.findResultRows(examId).stream()
                 .map(r -> {
                     int manual = r.manualScore() == null ? 0 : r.manualScore();

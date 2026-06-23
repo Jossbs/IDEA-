@@ -4,6 +4,7 @@ import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
 import { SelectField, TextField } from '@/design-system/components/Field'
 import {
+  AwardIcon,
   CalendarIcon,
   CopyIcon,
   EyeIcon,
@@ -30,8 +31,8 @@ type Filters = {
   subject: string
   level: AcademicLevel | 'all'
   status: StatusFilter
-  from: string
-  to: string
+  /** A single day (YYYY-MM-DD) to match exams created/updated that date. */
+  date: string
 }
 
 const EMPTY_FILTERS: Filters = {
@@ -39,8 +40,7 @@ const EMPTY_FILTERS: Filters = {
   subject: 'all',
   level: 'all',
   status: 'all',
-  from: '',
-  to: '',
+  date: '',
 }
 
 function hasActiveFilters(f: Filters): boolean {
@@ -49,8 +49,7 @@ function hasActiveFilters(f: Filters): boolean {
     f.subject !== 'all' ||
     f.level !== 'all' ||
     f.status !== 'all' ||
-    f.from !== '' ||
-    f.to !== ''
+    f.date !== ''
   )
 }
 
@@ -60,6 +59,11 @@ function formatDate(iso: string): string {
     month: 'short',
     year: 'numeric',
   })
+}
+
+/** Rounds to one decimal and normalizes -0 → 0. */
+function round1(n: number): number {
+  return Math.round(n * 10) / 10 || 0
 }
 
 function StatusBadge({ published }: { published: boolean }) {
@@ -124,9 +128,29 @@ function ExamCard({
           {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <CalendarIcon className="size-4" />
-          {formatDate(exam.updateTimestamp)}
+          <GaugeIcon className="size-4" />
+          {exam.totalPoints} pts · acredita {exam.passingScore}
         </span>
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarIcon className="size-4" />
+          {exam.dueAt ? `Entrega ${formatDate(exam.dueAt)}` : formatDate(exam.updateTimestamp)}
+        </span>
+      </div>
+
+      {/* Average grade across submissions, once there are any. */}
+      <div className="font-inter -mt-1 flex items-center gap-1.5 text-sm">
+        <AwardIcon className="size-4 text-primary/70" />
+        {exam.averageScore != null ? (
+          <span className="text-secondary/80">
+            Calificación promedio:{' '}
+            <span className="font-nunito font-bold tabular-nums text-primary">
+              {round1(exam.averageScore)}
+            </span>
+            <span className="text-secondary/50"> / {exam.totalPoints}</span>
+          </span>
+        ) : (
+          <span className="text-secondary/50">Sin entregas todavía</span>
+        )}
       </div>
 
       <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-secondary/10 pt-3">
@@ -190,8 +214,9 @@ export function ExamListView() {
   const filtered = useMemo(() => {
     if (!exams) return []
     const q = filters.query.trim().toLowerCase()
-    const from = filters.from ? new Date(`${filters.from}T00:00:00`) : null
-    const to = filters.to ? new Date(`${filters.to}T23:59:59.999`) : null
+    // A single day window [00:00, next day 00:00) — matches exams of that date.
+    const dayStart = filters.date ? new Date(`${filters.date}T00:00:00`) : null
+    const dayEnd = dayStart ? new Date(dayStart.getTime() + 24 * 60 * 60 * 1000) : null
     return exams.filter((exam) => {
       if (q && !exam.title.toLowerCase().includes(q) && !exam.subjectName.toLowerCase().includes(q)) {
         return false
@@ -200,9 +225,10 @@ export function ExamListView() {
       if (filters.level !== 'all' && exam.academicLevel !== filters.level) return false
       if (filters.status === 'published' && !exam.published) return false
       if (filters.status === 'draft' && exam.published) return false
-      const updated = new Date(exam.updateTimestamp)
-      if (from && updated < from) return false
-      if (to && updated > to) return false
+      if (dayStart && dayEnd) {
+        const updated = new Date(exam.updateTimestamp)
+        if (updated < dayStart || updated >= dayEnd) return false
+      }
       return true
     })
   }, [exams, filters])
@@ -278,22 +304,12 @@ export function ExamListView() {
             <option value="draft">Borrador</option>
           </SelectField>
 
-          <div className="grid grid-cols-2 gap-2">
-            <TextField
-              label="Desde"
-              type="date"
-              value={filters.from}
-              max={filters.to || undefined}
-              onChange={(e) => patch({ from: e.target.value })}
-            />
-            <TextField
-              label="Hasta"
-              type="date"
-              value={filters.to}
-              min={filters.from || undefined}
-              onChange={(e) => patch({ to: e.target.value })}
-            />
-          </div>
+          <TextField
+            label="Fecha"
+            type="date"
+            value={filters.date}
+            onChange={(e) => patch({ date: e.target.value })}
+          />
         </div>
 
         {filtersActive && (

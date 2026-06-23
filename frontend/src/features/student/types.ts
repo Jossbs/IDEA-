@@ -11,11 +11,19 @@ export interface StudentExamCard {
   subjectName: string
   academicLevel: AcademicLevel
   questionCount: number
+  /** Declared total the exam is worth. */
+  totalPoints: number
+  /** Minimum score to accredit. */
+  passingScore: number
+  /** Delivery deadline (ISO), or null when none. */
+  dueAt: string | null
   alreadyTaken: boolean
   /** Outcome once submitted; null while still pending. */
   attemptStatus: AttemptStatus | null
   score: number | null
   maxScore: number | null
+  /** Group average score across all submissions; null when there are none. */
+  averageScore: number | null
 }
 
 export interface StudentOption {
@@ -36,6 +44,10 @@ export interface StudentExam {
   examId: string
   title: string
   durationMinutes: number | null
+  totalPoints: number
+  passingScore: number
+  /** Delivery deadline (ISO), or null when none. */
+  dueAt: string | null
   questions: StudentQuestion[]
 }
 
@@ -51,6 +63,7 @@ export interface AttemptResult {
   status: AttemptStatus
   score: number
   maxScore: number
+  passingScore: number
 }
 
 /* ── Student self-review (GET /api/student/exams/{id}/result) ── */
@@ -81,5 +94,6 @@ export interface StudentAttemptReview {
   status: AttemptStatus
   score: number
   maxScore: number
+  passingScore: number
   questions: StudentAnswerReview[]
 }

@@ -46,11 +46,24 @@ export function StudentResultView() {
               <p className="font-nunito text-3xl font-extrabold tabular-nums text-primary">
                 {data.score} <span className="text-lg text-secondary/40">/ {data.maxScore}</span>
               </p>
+              <p className="font-inter mt-1 text-xs text-secondary/60">
+                Mínimo para acreditar: {data.passingScore}
+              </p>
             </div>
-            {data.status === 'PENDING_REVIEW' && (
+            {data.status === 'PENDING_REVIEW' ? (
               <span className="font-inter inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-2 text-sm font-semibold text-accent">
                 <ClockIcon className="size-4" />
                 Tu docente aún revisa las respuestas abiertas
+              </span>
+            ) : data.score >= data.passingScore ? (
+              <span className="font-inter inline-flex items-center gap-1.5 rounded-lg bg-success/15 px-3 py-2 text-sm font-semibold text-success">
+                <CheckIcon className="size-4" />
+                Acreditado
+              </span>
+            ) : (
+              <span className="font-inter inline-flex items-center gap-1.5 rounded-lg bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">
+                <XIcon className="size-4" />
+                No acreditado
               </span>
             )}
           </Card>

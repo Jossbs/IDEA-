@@ -23,6 +23,17 @@ function optionLabel(index: number): string {
   return String.fromCharCode(65 + index)
 }
 
+/** Formats an ISO deadline shown at the top of the runner. */
+function formatDeadline(iso: string): string {
+  return new Date(iso).toLocaleString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 function isAnswered(a: Answer | undefined): boolean {
   return !!a && (a.optionIds.length > 0 || a.text.trim().length > 0)
 }
@@ -134,7 +145,16 @@ export function StudentExamView() {
       {/* Header */}
       <header className="border-b border-secondary/10 bg-base/80 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-6 py-4">
-          <h1 className="font-nunito truncate text-lg font-extrabold text-secondary">{exam.title}</h1>
+          <div className="min-w-0">
+            <h1 className="font-nunito truncate text-lg font-extrabold text-secondary">
+              {exam.title}
+            </h1>
+            {exam.dueAt && (
+              <p className="font-inter mt-0.5 text-xs text-secondary/60">
+                Entrega: {formatDeadline(exam.dueAt)}
+              </p>
+            )}
+          </div>
           <span className="font-nunito text-sm font-bold text-secondary/70">
             Pregunta {currentIndex + 1} de {total}
           </span>
@@ -304,6 +324,7 @@ function ResultScreen({
   onReview: () => void
 }) {
   const pending = result.status === 'PENDING_REVIEW'
+  const accredited = !pending && result.score >= result.passingScore
   return (
     <main className="flex min-h-screen items-center justify-center bg-base px-6">
       <section className="w-full max-w-md rounded-xl bg-white p-10 text-center shadow-md">
@@ -323,7 +344,21 @@ function ResultScreen({
           <p className="font-nunito mt-1 text-3xl font-extrabold tabular-nums text-primary">
             {result.score} <span className="text-lg text-secondary/40">/ {result.maxScore}</span>
           </p>
+          <p className="font-inter mt-1 text-xs text-secondary/60">
+            Mínimo para acreditar: {result.passingScore}
+          </p>
         </div>
+
+        {!pending && (
+          <p
+            className={cn(
+              'font-inter mt-4 rounded-lg px-4 py-2 text-sm font-semibold',
+              accredited ? 'bg-success/15 text-success' : 'bg-danger/10 text-danger',
+            )}
+          >
+            {accredited ? '¡Acreditaste el examen! ✓' : 'No alcanzaste el puntaje para acreditar.'}
+          </p>
+        )}
 
         {pending && (
           <p className="font-inter mt-4 text-sm text-secondary/70">

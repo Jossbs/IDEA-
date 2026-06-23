@@ -1,6 +1,7 @@
 package com.idea.exam.dto;
 
 import com.idea.exam.domain.AcademicLevel;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,9 @@ public record ExamDetailResponse(
         String subjectName,
         AcademicLevel academicLevel,
         boolean published,
+        int totalPoints,
+        int passingScore,
+        LocalDateTime dueAt,
         List<UUID> assignedStudentIds,
         List<QuestionResponse> questions) {
 }

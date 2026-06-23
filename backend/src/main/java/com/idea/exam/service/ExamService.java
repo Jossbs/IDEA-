@@ -6,6 +6,7 @@ import com.idea.exam.dto.ExamSummaryResponse;
 import com.idea.exam.dto.GradingExam;
 import com.idea.exam.dto.StudentExamResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /** Public contract for exam authoring and reading. */
@@ -48,6 +49,12 @@ public interface ExamService {
 
     /** Published, active exams assigned to (and takeable by) the given student. */
     List<ExamSummaryResponse> listAssignedPublishedExams(UUID studentId);
+
+    /**
+     * Average submitted score (auto + manual) per exam across active attempts.
+     * Exams with no attempts are absent from the map.
+     */
+    Map<UUID, Double> averageScores(List<UUID> examIds);
 
     /**
      * Replaces the set of students an exam is assigned to. Owner-scoped.

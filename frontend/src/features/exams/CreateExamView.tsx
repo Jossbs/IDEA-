@@ -15,6 +15,7 @@ import {
   createOption,
   createQuestion,
   detailToDraft,
+  distributedPoints,
   hasEditableOptions,
   hasOptions,
   MIN_OPTIONS,
@@ -154,6 +155,17 @@ export function CreateExamView() {
         return `Marca exactamente una respuesta correcta en la pregunta ${n}.`
       }
     }
+    // Scoring rules (point 3 & 4): a valid worth, a reachable accreditation
+    // threshold, and a distribution that adds up to the declared total.
+    if (exam.totalPoints < 1) return 'El puntaje total del examen debe ser al menos 1.'
+    if (exam.passingScore < 1) return 'El puntaje de acreditación debe ser al menos 1.'
+    if (exam.passingScore > exam.totalPoints) {
+      return `El puntaje de acreditación no puede ser mayor que el puntaje total (${exam.totalPoints}).`
+    }
+    const distributed = distributedPoints(exam.questions)
+    if (distributed !== exam.totalPoints) {
+      return `Has distribuido ${distributed} ${distributed === 1 ? 'punto' : 'puntos'} entre las preguntas, pero el examen vale ${exam.totalPoints}. Ajusta los puntos de las preguntas o el puntaje total.`
+    }
     return null
   }
 
@@ -268,6 +280,51 @@ export function CreateExamView() {
         </div>
       </Card>
 
+      {/* Section A.1 — scoring & delivery */}
+      <Card className="shadow-sm">
+        <div className="grid gap-5">
+          <div>
+            <h2 className="font-nunito text-xl font-bold text-secondary">Puntuación y entrega</h2>
+            <p className="font-inter mt-1 text-sm text-secondary/70">
+              Define cuánto vale el examen, el puntaje mínimo para acreditar y la fecha límite de
+              entrega.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextField
+              label="Puntaje total del examen"
+              type="number"
+              min={1}
+              value={exam.totalPoints}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10)
+                patch({ totalPoints: Number.isNaN(n) ? 0 : n })
+              }}
+            />
+            <TextField
+              label="Puntaje para acreditar"
+              type="number"
+              min={1}
+              max={exam.totalPoints || undefined}
+              value={exam.passingScore}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10)
+                patch({ passingScore: Number.isNaN(n) ? 0 : n })
+              }}
+            />
+            <TextField
+              label="Fecha y hora de entrega (opcional)"
+              type="datetime-local"
+              value={exam.dueAt}
+              onChange={(e) => patch({ dueAt: e.target.value })}
+            />
+          </div>
+
+          <PointsBalance distributed={distributedPoints(exam.questions)} total={exam.totalPoints} />
+        </div>
+      </Card>
+
       {/* Section A.2 — assign to students */}
       <Card className="shadow-sm">
         <div className="grid gap-3">
@@ -288,7 +345,10 @@ export function CreateExamView() {
 
       {/* Section B — dynamic reactivo builder */}
       <section className="grid gap-4">
-        <h2 className="font-nunito text-xl font-bold text-secondary">Preguntas</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-nunito text-xl font-bold text-secondary">Preguntas</h2>
+          <PointsTag distributed={distributedPoints(exam.questions)} total={exam.totalPoints} />
+        </div>
 
         {exam.questions.map((question, index) => (
           <QuestionCard
@@ -342,5 +402,45 @@ export function CreateExamView() {
         </Button>
       </div>
     </div>
+  )
+}
+
+/** Full-width feedback on whether the distributed points match the declared total. */
+function PointsBalance({ distributed, total }: { distributed: number; total: number }) {
+  const balanced = distributed === total
+  const remaining = total - distributed
+  return (
+    <div
+      className={cn(
+        'font-inter flex flex-wrap items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm',
+        balanced ? 'bg-success/10 text-success' : 'bg-accent/10 text-accent',
+      )}
+    >
+      <span className="font-semibold">
+        Puntos distribuidos: {distributed} / {total}
+      </span>
+      <span>
+        {balanced
+          ? 'La distribución coincide con el puntaje total. ✓'
+          : remaining > 0
+            ? `Faltan ${remaining} ${remaining === 1 ? 'punto' : 'puntos'} por asignar.`
+            : `Te excediste por ${-remaining} ${-remaining === 1 ? 'punto' : 'puntos'}.`}
+      </span>
+    </div>
+  )
+}
+
+/** Compact chip mirroring the distribution balance next to the questions header. */
+function PointsTag({ distributed, total }: { distributed: number; total: number }) {
+  const balanced = distributed === total
+  return (
+    <span
+      className={cn(
+        'font-inter rounded-full px-3 py-1 text-xs font-semibold tabular-nums',
+        balanced ? 'bg-success/20 text-success' : 'bg-accent/15 text-accent',
+      )}
+    >
+      {distributed} / {total} pts
+    </span>
   )
 }
