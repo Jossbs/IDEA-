@@ -57,11 +57,16 @@ public interface ExamService {
     void assignStudents(UUID examId, UUID teacherId, List<UUID> studentIds);
 
     /**
-     * Sanitized exam (no answer key) for a student to take. Must be published.
+     * Sanitized exam (no answer key) for a student to take. Must be published and
+     * assigned to the requesting student.
      *
-     * @throws com.idea.shared.web.exception.ResourceNotFoundException if missing or not published
+     * @throws com.idea.shared.web.exception.ResourceNotFoundException if missing,
+     *     not published, or not assigned to the student
      */
-    StudentExamResponse getExamForStudent(UUID examId);
+    StudentExamResponse getExamForStudent(UUID examId, UUID studentId);
+
+    /** Whether the exam is assigned to (and thus takeable by) the given student. */
+    boolean isAssignedTo(UUID examId, UUID studentId);
 
     /**
      * Internal grading model (carries the answer key) for the {@code attempt} module.

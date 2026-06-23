@@ -78,6 +78,17 @@ export function StudentExamView() {
     )
   }
 
+  if (total === 0) {
+    return (
+      <Centered>
+        <p className="text-danger">Este examen no tiene preguntas.</p>
+        <Button variant="ghost" className="mt-4" onClick={() => navigate('/')}>
+          Volver al inicio
+        </Button>
+      </Centered>
+    )
+  }
+
   const question = questions[currentIndex]
   const isFirst = currentIndex === 0
   const isLast = currentIndex === total - 1

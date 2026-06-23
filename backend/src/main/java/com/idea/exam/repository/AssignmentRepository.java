@@ -13,6 +13,9 @@ public interface AssignmentRepository extends JpaRepository<ExamAssignment, UUID
     @Query("SELECT a.studentId FROM ExamAssignment a WHERE a.examId = :examId")
     List<UUID> findStudentIdsByExamId(UUID examId);
 
+    /** Whether a given exam is assigned to (and thus takeable by) a given student. */
+    boolean existsByExamIdAndStudentId(UUID examId, UUID studentId);
+
     /**
      * Bulk delete executed immediately, so a subsequent re-insert of the same
      * (exam, student) pair can't collide with the unique index (Hibernate would

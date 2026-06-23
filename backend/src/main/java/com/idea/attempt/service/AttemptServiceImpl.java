@@ -70,7 +70,7 @@ public class AttemptServiceImpl implements AttemptService {
     @Transactional
     public AttemptResultResponse submit(UUID examId, UUID studentId, SubmitAttemptRequest request) {
         GradingExam exam = examService.getGradingExam(examId);
-        if (!exam.published()) {
+        if (!exam.published() || !examService.isAssignedTo(examId, studentId)) {
             throw new ResourceNotFoundException("El examen no está disponible.");
         }
         if (attemptRepository.existsByExamIdAndStudentIdAndActiveRecordTrue(examId, studentId)) {
