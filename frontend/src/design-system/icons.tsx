@@ -196,6 +196,19 @@ export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function GripVerticalIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="currentColor" stroke="none" {...props}>
+      <circle cx="9" cy="6" r="1.4" />
+      <circle cx="9" cy="12" r="1.4" />
+      <circle cx="9" cy="18" r="1.4" />
+      <circle cx="15" cy="6" r="1.4" />
+      <circle cx="15" cy="12" r="1.4" />
+      <circle cx="15" cy="18" r="1.4" />
+    </Icon>
+  )
+}
+
 export function TrashIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
