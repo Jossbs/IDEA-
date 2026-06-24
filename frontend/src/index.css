@@ -34,8 +34,56 @@
 
   /* ── Soft elevation (only to lift cards off the base) ── */
   --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+
+  /* ── Motion (focus-mode transitions & micro-interactions) ──
+   * Registering these as theme tokens exposes `animate-fade-slide-up`,
+   * `animate-fade-in` and `animate-pop-in` utilities. */
+  --animate-fade-slide-up: fade-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in: fade-in 0.25s ease-out;
+  --animate-pop-in: pop-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 /* v4 default radii already satisfy 8–12px: rounded-lg = 8px, rounded-xl = 12px. */
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Honor users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
 
 @layer base {
   html,
