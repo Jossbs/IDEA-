@@ -54,31 +54,31 @@ export function StudentHomeView() {
   return (
     <div className="grid gap-8">
       <header>
-        <h1 className="font-nunito text-3xl font-extrabold text-secondary">
+        <h1 className="font-nunito text-3xl font-extrabold text-main">
           Hola, {user?.fullName}
         </h1>
-        <p className="font-inter mt-1 text-secondary/70">
+        <p className="font-inter mt-1 text-main/70">
           Tus exámenes asignados y los que ya fueron calificados.
         </p>
       </header>
 
       {/* Search */}
       <div className="relative max-w-md">
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-secondary/50" />
+        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-main/50" />
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Buscar examen por nombre o materia"
           placeholder="Buscar por título o materia…"
-          className="font-inter w-full rounded-lg border border-secondary/20 bg-white py-2 pl-9 pr-3 text-secondary placeholder:text-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-base"
+          className="font-inter w-full rounded-lg border border-main/20 bg-white py-2 pl-9 pr-3 text-main placeholder:text-main/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-app"
         />
       </div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" aria-busy="true">
           {Array.from({ length: 3 }, (_, i) => (
-            <Card key={i} className="h-44 animate-pulse bg-secondary/[0.04] shadow-sm" />
+            <Card key={i} className="h-44 animate-pulse bg-main/[0.04] shadow-sm" />
           ))}
         </div>
       ) : isError ? (
@@ -87,7 +87,7 @@ export function StudentHomeView() {
           {error instanceof ApiError ? `: ${error.message}` : '.'}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="font-inter text-secondary/70 shadow-sm">
+        <Card className="font-inter text-main/70 shadow-sm">
           {query.trim()
             ? `No se encontraron exámenes que coincidan con «${query}».`
             : 'Aún no tienes exámenes asignados. Vuelve más tarde.'}
@@ -112,13 +112,13 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
   return (
     <Card className="flex flex-col gap-4 shadow-sm">
       <div>
-        <h3 className="font-nunito text-lg font-bold text-secondary">{exam.title}</h3>
-        <p className="font-inter mt-0.5 text-sm text-secondary/70">
+        <h3 className="font-nunito text-lg font-bold text-main">{exam.title}</h3>
+        <p className="font-inter mt-0.5 text-sm text-main/70">
           {exam.subjectName} · {ACADEMIC_LEVEL_LABELS[exam.academicLevel]}
         </p>
       </div>
 
-      <div className="font-inter flex flex-col gap-1.5 text-sm text-secondary/70">
+      <div className="font-inter flex flex-col gap-1.5 text-sm text-main/70">
         <span className="inline-flex items-center gap-1.5">
           <FileTextIcon className="size-4" />
           {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
@@ -157,9 +157,9 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
             )}
           >
             {exam.score}
-            <span className="text-base font-bold text-secondary/40"> / {exam.maxScore}</span>
+            <span className="text-base font-bold text-main/40"> / {exam.maxScore}</span>
           </p>
-          <p className="font-inter mt-0.5 text-xs text-secondary/60">
+          <p className="font-inter mt-0.5 text-xs text-main/60">
             Mínimo para acreditar: {exam.passingScore}
           </p>
         </div>
@@ -170,7 +170,7 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
             <ClockIcon className="size-4" />
             En revisión del docente
           </p>
-          <p className="font-inter mt-0.5 text-xs text-secondary/60">
+          <p className="font-inter mt-0.5 text-xs text-main/60">
             Puntaje parcial: {exam.score} / {exam.maxScore}
           </p>
         </div>

@@ -17,8 +17,8 @@ export function StudentResultView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-secondary">Mis respuestas</h1>
-          <p className="font-inter mt-1 text-secondary/70">
+          <h1 className="font-nunito text-3xl font-extrabold text-main">Mis respuestas</h1>
+          <p className="font-inter mt-1 text-main/70">
             {data ? data.examTitle : 'Revisa tu examen calificado.'}
           </p>
         </div>
@@ -28,7 +28,7 @@ export function StudentResultView() {
       </header>
 
       {isLoading ? (
-        <Card className="font-inter text-secondary/70 shadow-sm">Cargando tu examen…</Card>
+        <Card className="font-inter text-main/70 shadow-sm">Cargando tu examen…</Card>
       ) : isError || !data ? (
         <Card className="font-inter text-danger shadow-sm">
           {error instanceof ApiError && error.status === 404
@@ -40,13 +40,13 @@ export function StudentResultView() {
           {/* Score summary */}
           <Card className="flex flex-wrap items-center justify-between gap-4 shadow-sm">
             <div>
-              <p className="font-inter text-sm text-secondary/60">
+              <p className="font-inter text-sm text-main/60">
                 {data.status === 'PENDING_REVIEW' ? 'Puntaje parcial (en revisión)' : 'Tu calificación'}
               </p>
               <p className="font-nunito text-3xl font-extrabold tabular-nums text-primary">
-                {data.score} <span className="text-lg text-secondary/40">/ {data.maxScore}</span>
+                {data.score} <span className="text-lg text-main/40">/ {data.maxScore}</span>
               </p>
-              <p className="font-inter mt-1 text-xs text-secondary/60">
+              <p className="font-inter mt-1 text-xs text-main/60">
                 Mínimo para acreditar: {data.passingScore}
               </p>
             </div>
@@ -84,7 +84,7 @@ function AnswerReviewCard({ item, index }: { item: StudentAnswerReview; index: n
     <Card className="shadow-sm">
       <div className="grid gap-3">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="font-nunito text-lg font-bold text-secondary">
+          <h3 className="font-nunito text-lg font-bold text-main">
             {index + 1}. {item.questionText}
           </h3>
           <ResultBadge item={item} />
@@ -101,10 +101,10 @@ function AnswerReviewCard({ item, index }: { item: StudentAnswerReview; index: n
                   className={cn(
                     'font-inter flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm',
                     opt.correct
-                      ? 'border-success/40 bg-success/10 text-secondary'
+                      ? 'border-success/40 bg-success/10 text-main'
                       : wrongPick
-                        ? 'border-danger/40 bg-danger/10 text-secondary'
-                        : 'border-secondary/15 bg-white text-secondary/80',
+                        ? 'border-danger/40 bg-danger/10 text-main'
+                        : 'border-main/15 bg-white text-main/80',
                   )}
                 >
                   <span className="flex size-5 shrink-0 items-center justify-center">
@@ -116,18 +116,18 @@ function AnswerReviewCard({ item, index }: { item: StudentAnswerReview; index: n
                   </span>
                   <span className={cn(opt.selected && 'font-semibold')}>{opt.optionText}</span>
                   {opt.selected && (
-                    <span className="font-inter ml-auto text-xs text-secondary/50">Tu respuesta</span>
+                    <span className="font-inter ml-auto text-xs text-main/50">Tu respuesta</span>
                   )}
                 </li>
               )
             })}
           </ul>
         ) : (
-          <div className="rounded-lg bg-secondary/5 px-4 py-3">
-            <p className="font-inter text-xs font-semibold uppercase tracking-wide text-secondary/50">
+          <div className="rounded-lg bg-main/5 px-4 py-3">
+            <p className="font-inter text-xs font-semibold uppercase tracking-wide text-main/50">
               Tu respuesta
             </p>
-            <p className="font-inter mt-1 whitespace-pre-wrap text-secondary/90">
+            <p className="font-inter mt-1 whitespace-pre-wrap text-main/90">
               {item.answerText?.trim() ? item.answerText : '(sin respuesta)'}
             </p>
           </div>

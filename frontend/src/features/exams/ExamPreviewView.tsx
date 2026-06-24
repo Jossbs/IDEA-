@@ -29,8 +29,8 @@ export function ExamPreviewView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-secondary">Previsualización</h1>
-          <p className="font-inter mt-1 text-secondary/70">
+          <h1 className="font-nunito text-3xl font-extrabold text-main">Previsualización</h1>
+          <p className="font-inter mt-1 text-main/70">
             Así se ve el examen; las respuestas correctas están resaltadas.
           </p>
         </div>
@@ -40,7 +40,7 @@ export function ExamPreviewView() {
       </header>
 
       {isLoading ? (
-        <Card className="font-inter text-secondary/70 shadow-sm">Cargando examen…</Card>
+        <Card className="font-inter text-main/70 shadow-sm">Cargando examen…</Card>
       ) : isError || !exam ? (
         <Card className="font-inter text-danger shadow-sm">
           No se pudo cargar el examen
@@ -51,19 +51,19 @@ export function ExamPreviewView() {
           <Card className="shadow-sm">
             <div className="grid gap-1">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="font-nunito text-2xl font-bold text-secondary">{exam.title}</h2>
+                <h2 className="font-nunito text-2xl font-bold text-main">{exam.title}</h2>
                 <span
                   className={cn(
                     'font-inter rounded-full px-3 py-1 text-xs font-semibold',
                     exam.published
                       ? 'bg-success/20 text-success'
-                      : 'bg-secondary/10 text-secondary/70',
+                      : 'bg-main/10 text-main/70',
                   )}
                 >
                   {exam.published ? 'Publicado' : 'Borrador'}
                 </span>
               </div>
-              <p className="font-inter text-sm text-secondary/70">
+              <p className="font-inter text-sm text-main/70">
                 {exam.subjectName} · {exam.questions.length} preguntas
               </p>
               <div className="font-inter mt-2 flex flex-wrap gap-2 text-xs">
@@ -80,7 +80,7 @@ export function ExamPreviewView() {
                 )}
               </div>
               {exam.description && (
-                <p className="font-inter mt-2 text-secondary/80">{exam.description}</p>
+                <p className="font-inter mt-2 text-main/80">{exam.description}</p>
               )}
             </div>
           </Card>
@@ -101,25 +101,25 @@ function PreviewQuestion({ question, index }: { question: QuestionDetail; index:
     <Card className="shadow-sm">
       <div className="grid gap-3">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="font-nunito text-lg font-bold text-secondary">
+          <h3 className="font-nunito text-lg font-bold text-main">
             {index + 1}. {question.questionText}
           </h3>
-          <span className="font-inter shrink-0 text-sm text-secondary/60">
+          <span className="font-inter shrink-0 text-sm text-main/60">
             {question.points} {question.points === 1 ? 'punto' : 'puntos'}
           </span>
         </div>
 
         <div className="font-inter flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-secondary/10 px-2.5 py-1 font-medium text-secondary/70">
+          <span className="rounded-full bg-main/10 px-2.5 py-1 font-medium text-main/70">
             {QUESTION_TYPE_LABELS[question.questionType]}
           </span>
-          <span className="rounded-full bg-secondary/10 px-2.5 py-1 font-medium text-secondary/70">
+          <span className="rounded-full bg-main/10 px-2.5 py-1 font-medium text-main/70">
             Dificultad: {DIFFICULTY_LABELS[question.difficultyLevel]}
           </span>
         </div>
 
         {question.questionType === 'SHORT_TEXT' ? (
-          <p className="font-inter rounded-lg bg-secondary/5 px-3 py-2 text-sm text-secondary/70">
+          <p className="font-inter rounded-lg bg-main/5 px-3 py-2 text-sm text-main/70">
             Respuesta abierta — se califica manualmente.
           </p>
         ) : (
@@ -131,7 +131,7 @@ function PreviewQuestion({ question, index }: { question: QuestionDetail; index:
                   'flex items-center gap-3 rounded-lg border px-3 py-2',
                   option.isCorrect
                     ? 'border-success/40 bg-success/5'
-                    : 'border-secondary/15 bg-white',
+                    : 'border-main/15 bg-white',
                 )}
               >
                 <span
@@ -139,7 +139,7 @@ function PreviewQuestion({ question, index }: { question: QuestionDetail; index:
                     'flex size-6 shrink-0 items-center justify-center rounded-full border text-xs',
                     option.isCorrect
                       ? 'border-success bg-success text-white'
-                      : 'border-secondary/25 text-transparent',
+                      : 'border-main/25 text-transparent',
                   )}
                 >
                   <CheckIcon className="size-3.5" />
@@ -147,7 +147,7 @@ function PreviewQuestion({ question, index }: { question: QuestionDetail; index:
                 <span
                   className={cn(
                     'font-inter text-sm',
-                    option.isCorrect ? 'font-medium text-secondary' : 'text-secondary/80',
+                    option.isCorrect ? 'font-medium text-main' : 'text-main/80',
                   )}
                 >
                   {option.optionText}

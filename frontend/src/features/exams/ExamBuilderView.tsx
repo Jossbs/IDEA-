@@ -229,7 +229,7 @@ export function ExamBuilderView() {
 
   if (isEdit && detailLoading && !hydrated) {
     return (
-      <div className="font-inter py-16 text-center text-secondary/70">Cargando examen…</div>
+      <div className="font-inter py-16 text-center text-main/70">Cargando examen…</div>
     )
   }
 
@@ -237,10 +237,10 @@ export function ExamBuilderView() {
     <div className="grid gap-8 pb-32">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-secondary">
+          <h1 className="font-nunito text-3xl font-extrabold text-main">
             {isEdit ? 'Editar examen' : 'Crear examen'}
           </h1>
-          <p className="font-inter mt-1 text-secondary/70">
+          <p className="font-inter mt-1 text-main/70">
             Estructura el examen y agrega tus reactivos manualmente.
           </p>
         </div>
@@ -252,7 +252,7 @@ export function ExamBuilderView() {
       {/* Section A — general config */}
       <Card className="shadow-sm">
         <div className="grid gap-5">
-          <h2 className="font-nunito text-xl font-bold text-secondary">Configuración general</h2>
+          <h2 className="font-nunito text-xl font-bold text-main">Configuración general</h2>
 
           <TextField
             label="Título del examen"
@@ -277,7 +277,7 @@ export function ExamBuilderView() {
           </SelectField>
 
           <label className="grid gap-1.5">
-            <span className="font-inter text-sm font-medium text-secondary/70">
+            <span className="font-inter text-sm font-medium text-main/70">
               Descripción (opcional)
             </span>
             <textarea
@@ -285,11 +285,11 @@ export function ExamBuilderView() {
               onChange={(e) => patch({ description: e.target.value })}
               placeholder="Instrucciones generales para el alumno…"
               rows={3}
-              className="font-inter w-full resize-y rounded-lg border border-secondary/20 bg-white px-3 py-2 text-secondary placeholder:text-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+              className="font-inter w-full resize-y rounded-lg border border-main/20 bg-white px-3 py-2 text-main placeholder:text-main/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
             />
           </label>
 
-          <label className="font-inter flex w-fit items-center gap-2 text-sm text-secondary/80">
+          <label className="font-inter flex w-fit items-center gap-2 text-sm text-main/80">
             <input
               type="checkbox"
               className="size-4 accent-accent"
@@ -306,8 +306,8 @@ export function ExamBuilderView() {
       <Card className="shadow-sm">
         <div className="grid gap-5">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-secondary">Puntuación y entrega</h2>
-            <p className="font-inter mt-1 text-sm text-secondary/70">
+            <h2 className="font-nunito text-xl font-bold text-main">Puntuación y entrega</h2>
+            <p className="font-inter mt-1 text-sm text-main/70">
               Define cuánto vale el examen, el puntaje mínimo para acreditar y la fecha límite de
               entrega.
             </p>
@@ -351,8 +351,8 @@ export function ExamBuilderView() {
       <Card className="shadow-sm">
         <div className="grid gap-3">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-secondary">Asignar a alumnos</h2>
-            <p className="font-inter mt-1 text-sm text-secondary/70">
+            <h2 className="font-nunito text-xl font-bold text-main">Asignar a alumnos</h2>
+            <p className="font-inter mt-1 text-sm text-main/70">
               Elige a qué alumnos va dirigido este examen. Puedes dejarlo vacío y asignarlo después.
             </p>
           </div>
@@ -368,9 +368,9 @@ export function ExamBuilderView() {
       {/* Section B — progressive-disclosure reactivo builder */}
       <section className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-nunito text-xl font-bold text-secondary">
+          <h2 className="font-nunito text-xl font-bold text-main">
             Preguntas{' '}
-            <span className="font-inter text-base font-medium text-secondary/50">
+            <span className="font-inter text-base font-medium text-main/50">
               ({exam.questions.length})
             </span>
           </h2>
@@ -420,7 +420,7 @@ export function ExamBuilderView() {
 
       {/* Floating sticky action bar — Guardar is always one click away. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-center">
-        <div className="pointer-events-auto flex w-full max-w-3xl items-center justify-between gap-4 rounded-2xl border border-secondary/10 bg-surface/90 px-5 py-3 shadow-lg backdrop-blur-sm">
+        <div className="pointer-events-auto flex w-full max-w-3xl items-center justify-between gap-4 rounded-2xl border border-main/10 bg-surface/90 px-5 py-3 shadow-lg backdrop-blur-sm">
           <span
             className={cn(
               'font-inter flex items-center gap-2 text-sm font-semibold tabular-nums',

@@ -49,9 +49,9 @@ const difficultyChip: Record<DifficultyLevel, string> = {
 
 /** Shared subtle icon-button: warm-gray hover, slate-blue icon. */
 const iconButton =
-  'inline-flex size-8 items-center justify-center rounded-lg text-secondary/50 transition-colors ' +
-  'hover:bg-secondary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 ' +
-  'disabled:hover:bg-transparent disabled:hover:text-secondary/50'
+  'inline-flex size-8 items-center justify-center rounded-lg text-main/50 transition-colors ' +
+  'hover:bg-main/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 ' +
+  'disabled:hover:bg-transparent disabled:hover:text-main/50'
 
 /**
  * Progressive-disclosure question editor. Collapsed, it shows a compact one-line
@@ -84,7 +84,7 @@ export function QuestionAccordion({
     <div
       className={cn(
         'overflow-hidden rounded-xl border bg-surface shadow-card transition-all duration-200',
-        expanded ? 'border-primary/30 ring-1 ring-primary/10' : 'border-secondary/10',
+        expanded ? 'border-primary/30 ring-1 ring-primary/10' : 'border-main/10',
       )}
     >
       {/* Header — always visible, toggles the body. */}
@@ -97,7 +97,7 @@ export function QuestionAccordion({
         >
           <ChevronRightIcon
             className={cn(
-              'size-5 shrink-0 text-secondary/50 transition-transform duration-200',
+              'size-5 shrink-0 text-main/50 transition-transform duration-200',
               expanded && 'rotate-90 text-primary',
             )}
           />
@@ -106,7 +106,7 @@ export function QuestionAccordion({
           </span>
 
           {expanded ? (
-            <span className="font-nunito text-lg font-bold text-secondary">
+            <span className="font-nunito text-lg font-bold text-main">
               Pregunta {index + 1}
             </span>
           ) : (
@@ -114,7 +114,7 @@ export function QuestionAccordion({
               <span
                 className={cn(
                   'font-inter min-w-0 flex-1 truncate text-sm',
-                  question.text.trim() ? 'text-secondary' : 'italic text-secondary/40',
+                  question.text.trim() ? 'text-main' : 'italic text-main/40',
                 )}
               >
                 {summary}
@@ -126,7 +126,7 @@ export function QuestionAccordion({
         {/* Compact meta — only when collapsed, to keep the summary informative. */}
         {!expanded && (
           <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
-            <span className="font-inter rounded-full bg-secondary/5 px-2.5 py-1 text-xs font-medium text-secondary/70">
+            <span className="font-inter rounded-full bg-main/5 px-2.5 py-1 text-xs font-medium text-main/70">
               {QUESTION_TYPE_LABELS[question.type]}
             </span>
             <span
@@ -157,14 +157,14 @@ export function QuestionAccordion({
 
       {/* Body — only mounted when expanded. */}
       {expanded && (
-        <div className="animate-fade-in grid gap-4 border-t border-secondary/10 p-5 pt-4">
+        <div className="animate-fade-in grid gap-4 border-t border-main/10 p-5 pt-4">
           <textarea
             value={question.text}
             onChange={(e) => onTextChange(e.target.value)}
             placeholder="Escribe el enunciado de la pregunta…"
             rows={2}
             autoFocus
-            className="font-inter w-full resize-y rounded-lg border border-secondary/20 bg-white px-3 py-2 text-secondary placeholder:text-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+            className="font-inter w-full resize-y rounded-lg border border-main/20 bg-white px-3 py-2 text-main placeholder:text-main/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
           />
 
           {/* Type + points */}
@@ -195,7 +195,7 @@ export function QuestionAccordion({
 
           {/* Difficulty — color-coded segmented control */}
           <div className="flex items-center gap-3">
-            <span className="font-inter text-sm font-medium text-secondary/70">Dificultad</span>
+            <span className="font-inter text-sm font-medium text-main/70">Dificultad</span>
             <div className="flex gap-2">
               {DIFFICULTY_LEVELS.map((level) => {
                 const active = question.difficulty === level
@@ -209,7 +209,7 @@ export function QuestionAccordion({
                       'font-inter rounded-full border px-3 py-1 text-sm font-medium transition-colors',
                       active
                         ? difficultyActive[level]
-                        : 'border-secondary/30 text-secondary/80 hover:border-secondary/50',
+                        : 'border-main/30 text-main/80 hover:border-main/50',
                     )}
                   >
                     {DIFFICULTY_LABELS[level]}
@@ -222,7 +222,7 @@ export function QuestionAccordion({
           {/* Options — depends on the question type */}
           {hasOptions(question.type) ? (
             <div className="grid gap-2">
-              <span className="font-inter text-sm font-medium text-secondary/70">
+              <span className="font-inter text-sm font-medium text-main/70">
                 {mode === 'multiple'
                   ? 'Opciones (marca las correctas)'
                   : 'Opciones (marca la correcta)'}
@@ -247,14 +247,14 @@ export function QuestionAccordion({
                   type="button"
                   onClick={onAddOption}
                   title="Agregar una nueva opción"
-                  className="font-inter inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-secondary/5 hover:text-accent-hover"
+                  className="font-inter inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-main/5 hover:text-accent-hover"
                 >
                   <span className="text-base leading-none">+</span> Agregar opción
                 </button>
               )}
             </div>
           ) : (
-            <p className="font-inter rounded-lg bg-secondary/5 px-3 py-2 text-sm text-secondary/70">
+            <p className="font-inter rounded-lg bg-main/5 px-3 py-2 text-sm text-main/70">
               El alumno responde en texto libre. Esta pregunta se calificará manualmente.
             </p>
           )}

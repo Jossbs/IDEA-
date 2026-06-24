@@ -37,7 +37,7 @@ export function OptionRow({
     <div
       className={cn(
         'flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors',
-        option.isCorrect ? 'border-success/40 bg-success/5' : 'border-secondary/15 bg-white',
+        option.isCorrect ? 'border-success/40 bg-success/5' : 'border-main/15 bg-white',
       )}
     >
       <input
@@ -55,8 +55,8 @@ export function OptionRow({
         placeholder={`Opción ${index + 1}`}
         readOnly={!editableText}
         className={cn(
-          'font-inter flex-1 bg-transparent text-secondary outline-none placeholder:text-secondary/40',
-          !editableText && 'cursor-default text-secondary/70',
+          'font-inter flex-1 bg-transparent text-main outline-none placeholder:text-main/40',
+          !editableText && 'cursor-default text-main/70',
         )}
       />
       {canRemove && (
@@ -65,7 +65,7 @@ export function OptionRow({
           onClick={onRemove}
           aria-label={`Eliminar opción ${index + 1}`}
           title="Eliminar opción"
-          className="text-secondary/50 transition-colors hover:text-accent"
+          className="text-main/50 transition-colors hover:text-accent"
         >
           <XIcon />
         </button>

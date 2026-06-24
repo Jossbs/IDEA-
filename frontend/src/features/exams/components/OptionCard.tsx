@@ -31,11 +31,11 @@ export function OptionCard({ label, text, selected, multiple, onSelect }: Option
       className={cn(
         'group relative flex w-full items-center gap-4 rounded-xl bg-white p-4 text-left',
         'cursor-pointer transition-all duration-200 ease-out',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-app',
         // border-2 in both states keeps the box steady (no 1px reflow on select).
         selected
           ? 'border-2 border-primary bg-primary/5 shadow-sm'
-          : 'border-2 border-secondary/10 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md',
+          : 'border-2 border-main/10 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md',
       )}
     >
       {/* Letter badge → fills with primary once chosen. */}
@@ -45,7 +45,7 @@ export function OptionCard({ label, text, selected, multiple, onSelect }: Option
           multiple ? 'rounded-lg' : 'rounded-full',
           selected
             ? 'bg-primary text-white'
-            : 'bg-secondary/5 text-secondary/60 group-hover:bg-primary/10 group-hover:text-primary',
+            : 'bg-main/5 text-main/60 group-hover:bg-primary/10 group-hover:text-primary',
         )}
       >
         {label}
@@ -54,7 +54,7 @@ export function OptionCard({ label, text, selected, multiple, onSelect }: Option
       <span
         className={cn(
           'font-inter flex-1 text-base leading-snug transition-colors',
-          selected ? 'font-semibold text-secondary' : 'text-secondary/80',
+          selected ? 'font-semibold text-main' : 'text-main/80',
         )}
       >
         {text}

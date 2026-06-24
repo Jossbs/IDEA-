@@ -140,27 +140,27 @@ export function StudentFocusView() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-base">
+    <main className="flex min-h-screen flex-col bg-app">
       {/* Persuasive header: thick rounded progress bar + clear counter. */}
-      <header className="sticky top-0 z-10 border-b border-secondary/10 bg-base/85 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-b border-main/10 bg-app/85 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-3xl px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="font-nunito truncate text-lg font-extrabold text-secondary">
+              <h1 className="font-nunito truncate text-lg font-extrabold text-main">
                 {exam.title}
               </h1>
               {exam.dueAt && (
-                <p className="font-inter mt-0.5 text-xs text-secondary/60">
+                <p className="font-inter mt-0.5 text-xs text-main/60">
                   Entrega: {formatDeadline(exam.dueAt)}
                 </p>
               )}
             </div>
-            <span className="font-nunito shrink-0 text-sm font-extrabold tabular-nums text-secondary">
-              Pregunta {currentIndex + 1} <span className="text-secondary/40">de {total}</span>
+            <span className="font-nunito shrink-0 text-sm font-extrabold tabular-nums text-main">
+              Pregunta {currentIndex + 1} <span className="text-main/40">de {total}</span>
             </span>
           </div>
 
-          <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-secondary/10">
+          <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-main/10">
             <div
               className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
               style={{ width: `${progressPct}%` }}
@@ -182,7 +182,7 @@ export function StudentFocusView() {
           <p className="font-nunito text-xs font-bold uppercase tracking-wide text-accent">
             Pregunta {currentIndex + 1}
           </p>
-          <h2 className="font-nunito mt-2 text-2xl font-bold leading-snug text-secondary sm:text-3xl">
+          <h2 className="font-nunito mt-2 text-2xl font-bold leading-snug text-main sm:text-3xl">
             {question.questionText}
           </h2>
 
@@ -197,7 +197,7 @@ export function StudentFocusView() {
       </div>
 
       {/* Footer nav */}
-      <footer className="sticky bottom-0 border-t border-secondary/10 bg-base/85 backdrop-blur-sm">
+      <footer className="sticky bottom-0 border-t border-main/10 bg-app/85 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-3xl px-6 py-4">
           {submitError && (
             <p role="alert" className="font-inter mb-3 text-center text-sm text-danger">
@@ -214,7 +214,7 @@ export function StudentFocusView() {
               Anterior
             </Button>
 
-            <span className="font-inter hidden text-sm text-secondary/60 sm:block">
+            <span className="font-inter hidden text-sm text-main/60 sm:block">
               {answeredCount} de {total} respondidas
             </span>
 
@@ -260,7 +260,7 @@ function QuestionInput({
         onChange={(e) => onSetText(e.target.value)}
         placeholder="Escribe tu respuesta…"
         rows={5}
-        className="font-inter mt-8 w-full resize-y rounded-xl border-2 border-secondary/10 bg-white px-4 py-3 text-secondary transition-colors placeholder:text-secondary/40 focus-visible:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        className="font-inter mt-8 w-full resize-y rounded-xl border-2 border-main/10 bg-white px-4 py-3 text-main transition-colors placeholder:text-main/40 focus-visible:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       />
     )
   }
@@ -270,7 +270,7 @@ function QuestionInput({
   return (
     <>
       {multiple && (
-        <p className="font-inter mt-3 text-sm text-secondary/60">Elige una o varias opciones.</p>
+        <p className="font-inter mt-3 text-sm text-main/60">Elige una o varias opciones.</p>
       )}
       <ul className="mt-8 grid gap-3">
         {question.options.map((option, index) => (
@@ -293,7 +293,7 @@ function QuestionInput({
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-base px-6 text-center font-inter text-secondary/70">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-app px-6 text-center font-inter text-main/70">
       {children}
     </main>
   )
@@ -314,25 +314,25 @@ function ResultScreen({
   const pending = result.status === 'PENDING_REVIEW'
   const accredited = !pending && result.score >= result.passingScore
   return (
-    <main className="flex min-h-screen items-center justify-center bg-base px-6">
+    <main className="flex min-h-screen items-center justify-center bg-app px-6">
       <section className="w-full max-w-md animate-fade-slide-up rounded-xl bg-white p-10 text-center shadow-md">
         <span className="mx-auto flex size-16 animate-pop-in items-center justify-center rounded-full bg-success/15 text-success">
           <CheckCircleIcon className="size-8" />
         </span>
-        <h1 className="font-nunito mt-6 text-2xl font-extrabold text-secondary">¡Examen enviado!</h1>
-        <p className="font-inter mt-2 text-secondary/70">
+        <h1 className="font-nunito mt-6 text-2xl font-extrabold text-main">¡Examen enviado!</h1>
+        <p className="font-inter mt-2 text-main/70">
           Tus respuestas de <span className="font-semibold">«{title}»</span> se registraron
           correctamente.
         </p>
 
-        <div className="mt-6 rounded-lg bg-secondary/5 px-4 py-4">
-          <p className="font-inter text-sm text-secondary/60">
+        <div className="mt-6 rounded-lg bg-main/5 px-4 py-4">
+          <p className="font-inter text-sm text-main/60">
             {pending ? 'Puntaje automático (parcial)' : 'Tu puntaje'}
           </p>
           <p className="font-nunito mt-1 text-3xl font-extrabold tabular-nums text-primary">
-            {result.score} <span className="text-lg text-secondary/40">/ {result.maxScore}</span>
+            {result.score} <span className="text-lg text-main/40">/ {result.maxScore}</span>
           </p>
-          <p className="font-inter mt-1 text-xs text-secondary/60">
+          <p className="font-inter mt-1 text-xs text-main/60">
             Mínimo para acreditar: {result.passingScore}
           </p>
         </div>
@@ -349,7 +349,7 @@ function ResultScreen({
         )}
 
         {pending && (
-          <p className="font-inter mt-4 text-sm text-secondary/70">
+          <p className="font-inter mt-4 text-sm text-main/70">
             Algunas preguntas de respuesta abierta serán revisadas por tu docente; tu calificación
             final puede aumentar.
           </p>

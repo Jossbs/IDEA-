@@ -80,7 +80,7 @@ export function SubjectFormPanel({ subject, onCancel, onSaved }: SubjectFormPane
   return (
     <Card className="shadow-sm lg:sticky lg:top-10">
       <form onSubmit={handleSubmit} className="grid gap-5">
-        <h2 className="font-nunito text-xl font-bold text-secondary">
+        <h2 className="font-nunito text-xl font-bold text-main">
           {isEdit ? 'Editar materia' : 'Nueva Materia'}
         </h2>
 
