@@ -33,25 +33,21 @@ type QuestionAccordionProps = {
   onRemove: () => void
 }
 
-/** Color-coded styles for the selected difficulty pill. */
-const difficultyActive: Record<DifficultyLevel, string> = {
-  LOW: 'bg-success text-white border-success',
-  MEDIUM: 'bg-accent text-white border-accent',
-  HIGH: 'bg-danger text-white border-danger',
-}
+/** Selected difficulty pill — a single, formal primary fill (radio-group look). */
+const difficultyActiveClass = 'border-primary bg-primary text-white'
 
-/** Soft tint for the difficulty chip shown in the collapsed summary. */
+/** Soft semantic tint for the difficulty chip shown in the collapsed summary. */
 const difficultyChip: Record<DifficultyLevel, string> = {
-  LOW: 'bg-success/15 text-success',
-  MEDIUM: 'bg-accent/15 text-accent',
-  HIGH: 'bg-danger/10 text-danger',
+  LOW: 'bg-success-bg text-success-text',
+  MEDIUM: 'bg-info-bg text-info-text',
+  HIGH: 'bg-danger-bg text-danger-text',
 }
 
 /** Shared subtle icon-button: warm-gray hover, slate-blue icon. */
 const iconButton =
-  'inline-flex size-8 items-center justify-center rounded-lg text-main/50 transition-colors ' +
-  'hover:bg-main/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 ' +
-  'disabled:hover:bg-transparent disabled:hover:text-main/50'
+  'inline-flex size-8 items-center justify-center rounded-lg text-muted transition-colors ' +
+  'hover:bg-app hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 ' +
+  'disabled:hover:bg-transparent disabled:hover:text-muted'
 
 /**
  * Progressive-disclosure question editor. Collapsed, it shows a compact one-line
@@ -84,7 +80,7 @@ export function QuestionAccordion({
     <div
       className={cn(
         'overflow-hidden rounded-xl border bg-surface shadow-card transition-all duration-200',
-        expanded ? 'border-primary/30 ring-1 ring-primary/10' : 'border-main/10',
+        expanded ? 'border-primary/30 ring-1 ring-primary/10' : 'border-subtle',
       )}
     >
       {/* Header — always visible, toggles the body. */}
@@ -208,8 +204,8 @@ export function QuestionAccordion({
                     className={cn(
                       'font-inter rounded-full border px-3 py-1 text-sm font-medium transition-colors',
                       active
-                        ? difficultyActive[level]
-                        : 'border-main/30 text-main/80 hover:border-main/50',
+                        ? difficultyActiveClass
+                        : 'border-subtle bg-surface text-muted hover:border-focus',
                     )}
                   >
                     {DIFFICULTY_LABELS[level]}

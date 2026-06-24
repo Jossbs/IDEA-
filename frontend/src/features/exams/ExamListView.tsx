@@ -256,14 +256,14 @@ export function ExamListView() {
       {/* Filters */}
       <Card className="grid gap-4 shadow-sm">
         <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-main/50" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
           <input
             type="search"
             value={filters.query}
             onChange={(e) => patch({ query: e.target.value })}
             aria-label="Buscar examen por nombre o materia"
             placeholder="Buscar por título o materia…"
-            className="font-inter w-full rounded-lg border border-main/20 bg-surface py-2 pl-9 pr-3 text-main placeholder:text-main/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+            className="font-inter h-11 w-full rounded-md border border-subtle bg-surface py-2 pl-9 pr-3 text-main transition-colors placeholder:text-muted/70 hover:border-focus focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
           />
         </div>
 
@@ -313,8 +313,8 @@ export function ExamListView() {
         </div>
 
         {filtersActive && (
-          <div className="flex items-center justify-between gap-3 border-t border-main/10 pt-3">
-            <p className="font-inter text-sm text-main/60">
+          <div className="flex items-center justify-between gap-3 border-t border-subtle pt-3">
+            <p className="font-inter text-sm text-muted">
               {filtered.length} {filtered.length === 1 ? 'examen' : 'exámenes'} encontrados
             </p>
             <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)}>
@@ -325,7 +325,7 @@ export function ExamListView() {
       </Card>
 
       {duplicate.isError && (
-        <p role="alert" className="font-inter text-sm text-danger">
+        <p role="alert" className="font-inter rounded-md bg-danger-bg px-3 py-2 text-sm text-danger-text">
           No se pudo duplicar el examen
           {duplicate.error instanceof ApiError ? `: ${duplicate.error.message}` : '.'}
         </p>
@@ -339,12 +339,12 @@ export function ExamListView() {
           ))}
         </div>
       ) : isError ? (
-        <Card className="font-inter text-danger shadow-sm">
+        <Card className="font-inter text-danger-text shadow-sm">
           No se pudieron cargar los exámenes
           {error instanceof ApiError ? `: ${error.message}` : '.'}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="font-inter grid gap-3 text-main/70 shadow-sm">
+        <Card className="font-inter grid gap-3 text-muted shadow-sm">
           {filtersActive ? (
             <div className="grid gap-3">
               <p>No se encontraron exámenes con los filtros aplicados.</p>
