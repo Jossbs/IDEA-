@@ -170,6 +170,14 @@ export function ChevronRightIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="m6 9 6 6 6-6" />
+    </Icon>
+  )
+}
+
 export function ClockIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
@@ -192,6 +200,19 @@ export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
     <Icon {...props}>
       <path d="M21.5 12a9.5 9.5 0 1 1-3.6-7.4" />
       <path d="m9 11 3 3L22 4" />
+    </Icon>
+  )
+}
+
+export function GripVerticalIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="currentColor" stroke="none" {...props}>
+      <circle cx="9" cy="6" r="1.4" />
+      <circle cx="9" cy="12" r="1.4" />
+      <circle cx="9" cy="18" r="1.4" />
+      <circle cx="15" cy="6" r="1.4" />
+      <circle cx="15" cy="12" r="1.4" />
+      <circle cx="15" cy="18" r="1.4" />
     </Icon>
   )
 }

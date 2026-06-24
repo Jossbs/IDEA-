@@ -17,8 +17,8 @@ export function StudentResultView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-main">Mis respuestas</h1>
-          <p className="font-inter mt-1 text-main/70">
+          <h1 className="text-3xl font-extrabold text-main">Mis respuestas</h1>
+          <p className="font-inter mt-1 text-muted">
             {data ? data.examTitle : 'Revisa tu examen calificado.'}
           </p>
         </div>
@@ -28,9 +28,9 @@ export function StudentResultView() {
       </header>
 
       {isLoading ? (
-        <Card className="font-inter text-main/70 shadow-sm">Cargando tu examen…</Card>
+        <Card className="font-inter text-muted shadow-sm">Cargando tu examen…</Card>
       ) : isError || !data ? (
-        <Card className="font-inter text-danger shadow-sm">
+        <Card className="font-inter text-danger-text shadow-sm">
           {error instanceof ApiError && error.status === 404
             ? 'Aún no has presentado este examen.'
             : `No se pudo cargar tu examen${error instanceof ApiError ? `: ${error.message}` : '.'}`}
@@ -40,13 +40,13 @@ export function StudentResultView() {
           {/* Score summary */}
           <Card className="flex flex-wrap items-center justify-between gap-4 shadow-sm">
             <div>
-              <p className="font-inter text-sm text-main/60">
+              <p className="font-inter text-sm text-muted">
                 {data.status === 'PENDING_REVIEW' ? 'Puntaje parcial (en revisión)' : 'Tu calificación'}
               </p>
-              <p className="font-nunito text-3xl font-extrabold tabular-nums text-primary">
-                {data.score} <span className="text-lg text-main/40">/ {data.maxScore}</span>
+              <p className="text-3xl font-extrabold tabular-nums text-primary">
+                {data.score} <span className="text-lg text-muted">/ {data.maxScore}</span>
               </p>
-              <p className="font-inter mt-1 text-xs text-main/60">
+              <p className="font-inter mt-1 text-xs text-muted">
                 Mínimo para acreditar: {data.passingScore}
               </p>
             </div>
@@ -56,12 +56,12 @@ export function StudentResultView() {
                 Tu docente aún revisa las respuestas abiertas
               </span>
             ) : data.score >= data.passingScore ? (
-              <span className="font-inter inline-flex items-center gap-1.5 rounded-lg bg-success/15 px-3 py-2 text-sm font-semibold text-success">
+              <span className="font-inter inline-flex items-center gap-1.5 rounded-lg bg-success-bg px-3 py-2 text-sm font-semibold text-success-text">
                 <CheckIcon className="size-4" />
                 Acreditado
               </span>
             ) : (
-              <span className="font-inter inline-flex items-center gap-1.5 rounded-lg bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">
+              <span className="font-inter inline-flex items-center gap-1.5 rounded-lg bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">
                 <XIcon className="size-4" />
                 No acreditado
               </span>
@@ -84,7 +84,7 @@ function AnswerReviewCard({ item, index }: { item: StudentAnswerReview; index: n
     <Card className="shadow-sm">
       <div className="grid gap-3">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="font-nunito text-lg font-bold text-main">
+          <h3 className="text-lg font-bold text-main">
             {index + 1}. {item.questionText}
           </h3>
           <ResultBadge item={item} />
@@ -101,22 +101,22 @@ function AnswerReviewCard({ item, index }: { item: StudentAnswerReview; index: n
                   className={cn(
                     'font-inter flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm',
                     opt.correct
-                      ? 'border-success/40 bg-success/10 text-main'
+                      ? 'border-success/40 bg-success-bg text-main'
                       : wrongPick
-                        ? 'border-danger/40 bg-danger/10 text-main'
-                        : 'border-main/15 bg-white text-main/80',
+                        ? 'border-danger/40 bg-danger-bg text-main'
+                        : 'border-subtle bg-surface text-main',
                   )}
                 >
                   <span className="flex size-5 shrink-0 items-center justify-center">
                     {opt.correct ? (
-                      <CheckIcon className="size-4 text-success" />
+                      <CheckIcon className="size-4 text-success-text" />
                     ) : wrongPick ? (
-                      <XIcon className="size-4 text-danger" />
+                      <XIcon className="size-4 text-danger-text" />
                     ) : null}
                   </span>
                   <span className={cn(opt.selected && 'font-semibold')}>{opt.optionText}</span>
                   {opt.selected && (
-                    <span className="font-inter ml-auto text-xs text-main/50">Tu respuesta</span>
+                    <span className="font-inter ml-auto text-xs text-muted">Tu respuesta</span>
                   )}
                 </li>
               )
@@ -124,10 +124,10 @@ function AnswerReviewCard({ item, index }: { item: StudentAnswerReview; index: n
           </ul>
         ) : (
           <div className="rounded-lg bg-main/5 px-4 py-3">
-            <p className="font-inter text-xs font-semibold uppercase tracking-wide text-main/50">
+            <p className="font-inter text-xs font-semibold uppercase tracking-wide text-muted">
               Tu respuesta
             </p>
-            <p className="font-inter mt-1 whitespace-pre-wrap text-main/90">
+            <p className="font-inter mt-1 whitespace-pre-wrap text-main">
               {item.answerText?.trim() ? item.answerText : '(sin respuesta)'}
             </p>
           </div>
@@ -150,7 +150,7 @@ function ResultBadge({ item }: { item: StudentAnswerReview }) {
     <span
       className={cn(
         'font-inter shrink-0 rounded-full px-3 py-1 text-xs font-semibold tabular-nums',
-        item.correct ? 'bg-success/20 text-success' : 'bg-danger/15 text-danger',
+        item.correct ? 'bg-success-bg text-success-text' : 'bg-danger-bg text-danger-text',
       )}
     >
       {item.awardedPoints ?? 0} / {item.points} pts

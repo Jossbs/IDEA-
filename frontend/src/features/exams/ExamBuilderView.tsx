@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
-import { SelectField, TextField } from '@/design-system/components/Field'
+import { CustomSelect } from '@/design-system/components/CustomSelect'
+import { TextField } from '@/design-system/components/Field'
 import { CheckCircleIcon } from '@/design-system/icons'
+import { useToast } from '@/design-system/toast/ToastProvider'
 import { useSubjects } from '@/features/subjects/api'
 import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
@@ -26,8 +28,6 @@ import {
 } from './types'
 import type { DifficultyLevel, ExamDraft, ExamQuestion, QuestionType } from './types'
 
-type Feedback = { type: 'success' | 'error'; message: string }
-
 /**
  * Teacher-facing exam builder. A progressive-disclosure list of question
  * accordions (only the one being edited is expanded) plus a floating sticky
@@ -38,9 +38,9 @@ type Feedback = { type: 'success' | 'error'; message: string }
 export function ExamBuilderView() {
   const { examId } = useParams()
   const isEdit = Boolean(examId)
+  const toast = useToast()
 
   const [exam, setExam] = useState<ExamDraft>(createExamDraft)
-  const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [hydrated, setHydrated] = useState(false)
   /** Id of the single expanded question (progressive disclosure). */
   const [expandedId, setExpandedId] = useState<string | null>(
@@ -191,19 +191,16 @@ export function ExamBuilderView() {
   function handleSave() {
     const error = validate()
     if (error) {
-      setFeedback({ type: 'error', message: error })
+      toast.error(error)
       return
     }
-    setFeedback(null)
     const payload = toCreateExamPayload(exam)
     const onError = (err: unknown) =>
-      setFeedback({
-        type: 'error',
-        message:
-          err instanceof ApiError
-            ? err.message
-            : 'No se pudo guardar el examen. Inténtalo de nuevo.',
-      })
+      toast.error(
+        err instanceof ApiError
+          ? err.message
+          : 'No se pudo guardar el examen. Inténtalo de nuevo.',
+      )
 
     if (isEdit) {
       updateExam.mutate(payload, { onSuccess: () => navigate('/exams'), onError })
@@ -216,12 +213,11 @@ export function ExamBuilderView() {
         const fresh = createExamDraft()
         setExam(fresh)
         setExpandedId(fresh.questions[0]?.id ?? null)
-        setFeedback({
-          type: 'success',
-          message: wasPublished
+        toast.success(
+          wasPublished
             ? 'Examen creado y publicado correctamente.'
             : 'Borrador guardado correctamente.',
-        })
+        )
       },
       onError,
     })
@@ -229,30 +225,34 @@ export function ExamBuilderView() {
 
   if (isEdit && detailLoading && !hydrated) {
     return (
-      <div className="font-inter py-16 text-center text-main/70">Cargando examen…</div>
+      <div className="font-inter py-16 text-center text-muted">Cargando examen…</div>
     )
   }
 
   return (
-    <div className="grid gap-8 pb-32">
+    <div className="grid gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-main">
+          <h1 className="text-3xl font-extrabold text-main">
             {isEdit ? 'Editar examen' : 'Crear examen'}
           </h1>
-          <p className="font-inter mt-1 text-main/70">
+          <p className="font-inter mt-1 text-muted">
             Estructura el examen y agrega tus reactivos manualmente.
           </p>
         </div>
-        <Button variant="ghost" onClick={() => navigate('/exams')}>
-          ← Volver a Mis Evaluaciones
-        </Button>
+        <button
+          type="button"
+          onClick={() => navigate('/exams')}
+          className="font-inter inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
+        >
+          <span aria-hidden="true">←</span> Volver a Mis Evaluaciones
+        </button>
       </header>
 
       {/* Section A — general config */}
-      <Card className="shadow-sm">
+      <Card className="rounded-xl shadow-sm">
         <div className="grid gap-5">
-          <h2 className="font-nunito text-xl font-bold text-main">Configuración general</h2>
+          <h2 className="text-lg font-semibold text-main">Configuración general</h2>
 
           <TextField
             label="Título del examen"
@@ -261,23 +261,19 @@ export function ExamBuilderView() {
             placeholder="Ej. Examen parcial de Álgebra"
           />
 
-          <SelectField
+          <CustomSelect
             label="Materia"
+            placeholder={subjectsLoading ? 'Cargando…' : 'Selecciona una materia…'}
+            options={(subjects ?? []).map((subject) => ({
+              value: subject.subjectIdentifier,
+              label: `${subject.subjectName} - ${ACADEMIC_LEVEL_LABELS[subject.academicLevel]}`,
+            }))}
             value={exam.subjectId}
-            onChange={(e) => patch({ subjectId: e.target.value })}
-          >
-            <option value="" disabled>
-              {subjectsLoading ? 'Cargando…' : 'Selecciona una materia…'}
-            </option>
-            {subjects?.map((subject) => (
-              <option key={subject.subjectIdentifier} value={subject.subjectIdentifier}>
-                {subject.subjectName} - {ACADEMIC_LEVEL_LABELS[subject.academicLevel]}
-              </option>
-            ))}
-          </SelectField>
+            onChange={(subjectId) => patch({ subjectId })}
+          />
 
           <label className="grid gap-1.5">
-            <span className="font-inter text-sm font-medium text-main/70">
+            <span className="font-inter text-sm font-medium text-main">
               Descripción (opcional)
             </span>
             <textarea
@@ -285,14 +281,14 @@ export function ExamBuilderView() {
               onChange={(e) => patch({ description: e.target.value })}
               placeholder="Instrucciones generales para el alumno…"
               rows={3}
-              className="font-inter w-full resize-y rounded-lg border border-main/20 bg-white px-3 py-2 text-main placeholder:text-main/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+              className="font-inter w-full resize-y rounded-md border border-subtle bg-surface px-3 py-2 text-main transition-colors placeholder:text-muted/70 hover:border-focus focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
             />
           </label>
 
-          <label className="font-inter flex w-fit items-center gap-2 text-sm text-main/80">
+          <label className="font-inter flex w-fit items-center gap-2 text-sm text-muted">
             <input
               type="checkbox"
-              className="size-4 accent-accent"
+              className="size-4 accent-primary"
               checked={exam.isPublished}
               onChange={(e) => patch({ isPublished: e.target.checked })}
             />
@@ -303,11 +299,11 @@ export function ExamBuilderView() {
       </Card>
 
       {/* Section A.1 — scoring & delivery */}
-      <Card className="shadow-sm">
+      <Card className="rounded-xl shadow-sm">
         <div className="grid gap-5">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-main">Puntuación y entrega</h2>
-            <p className="font-inter mt-1 text-sm text-main/70">
+            <h2 className="text-lg font-semibold text-main">Puntuación y entrega</h2>
+            <p className="font-inter mt-1 text-sm text-muted">
               Define cuánto vale el examen, el puntaje mínimo para acreditar y la fecha límite de
               entrega.
             </p>
@@ -348,11 +344,11 @@ export function ExamBuilderView() {
       </Card>
 
       {/* Section A.2 — assign to students */}
-      <Card className="shadow-sm">
+      <Card className="rounded-xl shadow-sm">
         <div className="grid gap-3">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-main">Asignar a alumnos</h2>
-            <p className="font-inter mt-1 text-sm text-main/70">
+            <h2 className="text-lg font-semibold text-main">Asignar a alumnos</h2>
+            <p className="font-inter mt-1 text-sm text-muted">
               Elige a qué alumnos va dirigido este examen. Puedes dejarlo vacío y asignarlo después.
             </p>
           </div>
@@ -360,7 +356,7 @@ export function ExamBuilderView() {
             students={students ?? []}
             selectedIds={exam.studentIds}
             onChange={(studentIds) => patch({ studentIds })}
-            className="max-h-64"
+            className="max-h-60"
           />
         </div>
       </Card>
@@ -368,9 +364,9 @@ export function ExamBuilderView() {
       {/* Section B — progressive-disclosure reactivo builder */}
       <section className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-nunito text-xl font-bold text-main">
+          <h2 className="text-lg font-semibold text-main">
             Preguntas{' '}
-            <span className="font-inter text-base font-medium text-main/50">
+            <span className="font-inter text-base font-medium text-muted">
               ({exam.questions.length})
             </span>
           </h2>
@@ -400,37 +396,32 @@ export function ExamBuilderView() {
         <button
           type="button"
           onClick={addQuestion}
-          className="font-inter w-full rounded-xl border-2 border-dashed border-accent/50 py-4 font-semibold text-accent transition-colors hover:border-accent hover:bg-accent/5"
+          className="font-inter w-full rounded-xl border-2 border-dashed border-primary/50 py-4 font-semibold text-primary transition-colors hover:border-primary hover:bg-primary/5"
         >
           + Agregar nueva pregunta
         </button>
       </section>
 
-      {feedback && (
-        <div
-          role="status"
-          className={cn(
-            'font-inter rounded-lg px-4 py-3 text-sm',
-            feedback.type === 'success' ? 'bg-success/15 text-success' : 'bg-danger/10 text-danger',
-          )}
-        >
-          {feedback.message}
-        </div>
-      )}
-
-      {/* Floating sticky action bar — Guardar is always one click away. */}
-      <div className="pointer-events-none sticky bottom-4 z-20 flex justify-center">
-        <div className="pointer-events-auto flex w-full max-w-3xl items-center justify-between gap-4 rounded-2xl border border-main/10 bg-surface/90 px-5 py-3 shadow-lg backdrop-blur-sm">
+      {/* Sticky action bar — full-width within the central container, anchored to
+          the bottom so "Guardar" is always reachable without scrolling. */}
+      <div className="sticky bottom-0 z-20 -mx-8 mt-2 border-t border-subtle bg-surface px-8 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:-mx-10 md:px-10">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3">
           <span
             className={cn(
               'font-inter flex items-center gap-2 text-sm font-semibold tabular-nums',
-              distributed === exam.totalPoints ? 'text-success' : 'text-accent',
+              distributed === exam.totalPoints ? 'text-success-text' : 'text-muted',
             )}
           >
             {distributed === exam.totalPoints && <CheckCircleIcon className="size-4" />}
             {distributed} / {exam.totalPoints} pts
           </span>
-          <Button variant="accent" size="lg" onClick={handleSave} disabled={pending}>
+          <Button
+            variant="accent"
+            size="lg"
+            onClick={handleSave}
+            disabled={pending}
+            className="max-sm:flex-1"
+          >
             {pending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Guardar Examen Completo'}
           </Button>
         </div>
@@ -447,7 +438,7 @@ function PointsBalance({ distributed, total }: { distributed: number; total: num
     <div
       className={cn(
         'font-inter flex flex-wrap items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm',
-        balanced ? 'bg-success/10 text-success' : 'bg-accent/10 text-accent',
+        balanced ? 'bg-success-bg text-success-text' : 'bg-warning-bg text-warning-text',
       )}
     >
       <span className="font-semibold">
@@ -471,7 +462,7 @@ function PointsTag({ distributed, total }: { distributed: number; total: number 
     <span
       className={cn(
         'font-inter rounded-full px-3 py-1 text-xs font-semibold tabular-nums',
-        balanced ? 'bg-success/20 text-success' : 'bg-accent/15 text-accent',
+        balanced ? 'bg-success-bg text-success-text' : 'bg-warning-bg text-warning-text',
       )}
     >
       {distributed} / {total} pts

@@ -1,4 +1,5 @@
-import { SelectField, TextField } from '@/design-system/components/Field'
+import { CustomSelect } from '@/design-system/components/CustomSelect'
+import { TextField } from '@/design-system/components/Field'
 import { ChevronRightIcon, TrashIcon } from '@/design-system/icons'
 import { cn } from '@/lib/cn'
 import {
@@ -33,25 +34,21 @@ type QuestionAccordionProps = {
   onRemove: () => void
 }
 
-/** Color-coded styles for the selected difficulty pill. */
-const difficultyActive: Record<DifficultyLevel, string> = {
-  LOW: 'bg-success text-white border-success',
-  MEDIUM: 'bg-accent text-white border-accent',
-  HIGH: 'bg-danger text-white border-danger',
-}
+/** Selected difficulty pill — a single, formal primary fill (radio-group look). */
+const difficultyActiveClass = 'border-primary bg-primary text-white'
 
-/** Soft tint for the difficulty chip shown in the collapsed summary. */
+/** Soft semantic tint for the difficulty chip shown in the collapsed summary. */
 const difficultyChip: Record<DifficultyLevel, string> = {
-  LOW: 'bg-success/15 text-success',
-  MEDIUM: 'bg-accent/15 text-accent',
-  HIGH: 'bg-danger/10 text-danger',
+  LOW: 'bg-success-bg text-success-text',
+  MEDIUM: 'bg-info-bg text-info-text',
+  HIGH: 'bg-danger-bg text-danger-text',
 }
 
 /** Shared subtle icon-button: warm-gray hover, slate-blue icon. */
 const iconButton =
-  'inline-flex size-8 items-center justify-center rounded-lg text-main/50 transition-colors ' +
-  'hover:bg-main/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 ' +
-  'disabled:hover:bg-transparent disabled:hover:text-main/50'
+  'inline-flex size-8 items-center justify-center rounded-lg text-muted transition-colors ' +
+  'hover:bg-app hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 ' +
+  'disabled:hover:bg-transparent disabled:hover:text-muted'
 
 /**
  * Progressive-disclosure question editor. Collapsed, it shows a compact one-line
@@ -84,7 +81,7 @@ export function QuestionAccordion({
     <div
       className={cn(
         'overflow-hidden rounded-xl border bg-surface shadow-card transition-all duration-200',
-        expanded ? 'border-primary/30 ring-1 ring-primary/10' : 'border-main/10',
+        expanded ? 'border-primary/30 ring-1 ring-primary/10' : 'border-subtle',
       )}
     >
       {/* Header — always visible, toggles the body. */}
@@ -97,16 +94,16 @@ export function QuestionAccordion({
         >
           <ChevronRightIcon
             className={cn(
-              'size-5 shrink-0 text-main/50 transition-transform duration-200',
+              'size-5 shrink-0 text-muted transition-transform duration-200',
               expanded && 'rotate-90 text-primary',
             )}
           />
-          <span className="font-nunito flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
             {index + 1}
           </span>
 
           {expanded ? (
-            <span className="font-nunito text-lg font-bold text-main">
+            <span className="text-lg font-bold text-main">
               Pregunta {index + 1}
             </span>
           ) : (
@@ -114,7 +111,7 @@ export function QuestionAccordion({
               <span
                 className={cn(
                   'font-inter min-w-0 flex-1 truncate text-sm',
-                  question.text.trim() ? 'text-main' : 'italic text-main/40',
+                  question.text.trim() ? 'text-main' : 'italic text-muted/70',
                 )}
               >
                 {summary}
@@ -126,7 +123,7 @@ export function QuestionAccordion({
         {/* Compact meta — only when collapsed, to keep the summary informative. */}
         {!expanded && (
           <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
-            <span className="font-inter rounded-full bg-main/5 px-2.5 py-1 text-xs font-medium text-main/70">
+            <span className="font-inter rounded-full bg-app px-2.5 py-1 text-xs font-medium text-muted">
               {QUESTION_TYPE_LABELS[question.type]}
             </span>
             <span
@@ -137,7 +134,7 @@ export function QuestionAccordion({
             >
               {DIFFICULTY_LABELS[question.difficulty]}
             </span>
-            <span className="font-nunito rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold tabular-nums text-primary">
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold tabular-nums text-primary">
               {question.points} pts
             </span>
           </div>
@@ -149,7 +146,7 @@ export function QuestionAccordion({
           disabled={!canRemove}
           aria-label={`Eliminar pregunta ${index + 1}`}
           title="Eliminar pregunta"
-          className={cn(iconButton, 'hover:bg-danger/10 hover:text-danger')}
+          className={cn(iconButton, 'hover:bg-danger-bg hover:text-danger-text')}
         >
           <TrashIcon className="size-4" />
         </button>
@@ -157,29 +154,27 @@ export function QuestionAccordion({
 
       {/* Body — only mounted when expanded. */}
       {expanded && (
-        <div className="animate-fade-in grid gap-4 border-t border-main/10 p-5 pt-4">
+        <div className="animate-fade-in grid gap-4 border-t border-subtle p-5 pt-4">
           <textarea
             value={question.text}
             onChange={(e) => onTextChange(e.target.value)}
             placeholder="Escribe el enunciado de la pregunta…"
             rows={2}
             autoFocus
-            className="font-inter w-full resize-y rounded-lg border border-main/20 bg-white px-3 py-2 text-main placeholder:text-main/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+            className="font-inter w-full resize-y rounded-md border border-subtle bg-app/50 px-3 py-2 text-main transition-colors placeholder:text-muted/70 hover:border-focus focus-visible:border-primary focus-visible:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
           />
 
           {/* Type + points */}
           <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-            <SelectField
+            <CustomSelect
               label="Tipo de respuesta"
+              options={QUESTION_TYPES.map((type) => ({
+                value: type,
+                label: QUESTION_TYPE_LABELS[type],
+              }))}
               value={question.type}
-              onChange={(e) => onTypeChange(e.target.value as QuestionType)}
-            >
-              {QUESTION_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {QUESTION_TYPE_LABELS[type]}
-                </option>
-              ))}
-            </SelectField>
+              onChange={(value) => onTypeChange(value as QuestionType)}
+            />
 
             <TextField
               label="Puntos"
@@ -195,7 +190,7 @@ export function QuestionAccordion({
 
           {/* Difficulty — color-coded segmented control */}
           <div className="flex items-center gap-3">
-            <span className="font-inter text-sm font-medium text-main/70">Dificultad</span>
+            <span className="font-inter text-sm font-medium text-main">Dificultad</span>
             <div className="flex gap-2">
               {DIFFICULTY_LEVELS.map((level) => {
                 const active = question.difficulty === level
@@ -208,8 +203,8 @@ export function QuestionAccordion({
                     className={cn(
                       'font-inter rounded-full border px-3 py-1 text-sm font-medium transition-colors',
                       active
-                        ? difficultyActive[level]
-                        : 'border-main/30 text-main/80 hover:border-main/50',
+                        ? difficultyActiveClass
+                        : 'border-subtle bg-surface text-muted hover:border-focus',
                     )}
                   >
                     {DIFFICULTY_LABELS[level]}
@@ -222,7 +217,7 @@ export function QuestionAccordion({
           {/* Options — depends on the question type */}
           {hasOptions(question.type) ? (
             <div className="grid gap-2">
-              <span className="font-inter text-sm font-medium text-main/70">
+              <span className="font-inter text-sm font-medium text-main">
                 {mode === 'multiple'
                   ? 'Opciones (marca las correctas)'
                   : 'Opciones (marca la correcta)'}
@@ -247,14 +242,14 @@ export function QuestionAccordion({
                   type="button"
                   onClick={onAddOption}
                   title="Agregar una nueva opción"
-                  className="font-inter inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-main/5 hover:text-accent-hover"
+                  className="font-inter inline-flex w-fit items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 hover:text-primary-hover"
                 >
                   <span className="text-base leading-none">+</span> Agregar opción
                 </button>
               )}
             </div>
           ) : (
-            <p className="font-inter rounded-lg bg-main/5 px-3 py-2 text-sm text-main/70">
+            <p className="font-inter rounded-lg bg-app px-3 py-2 text-sm text-muted">
               El alumno responde en texto libre. Esta pregunta se calificará manualmente.
             </p>
           )}
@@ -264,7 +259,7 @@ export function QuestionAccordion({
       {/* Subtle validity hint while collapsed, when a choice question has no
           correct answer marked — surfaces problems without opening the card. */}
       {!expanded && hasOptions(question.type) && correctCount === 0 && (
-        <p className="font-inter border-t border-danger/20 bg-danger/5 px-5 py-2 text-xs text-danger">
+        <p className="font-inter border-t border-danger-text/20 bg-danger-bg px-5 py-2 text-xs font-medium text-danger-text">
           Falta marcar la respuesta correcta.
         </p>
       )}

@@ -9,7 +9,7 @@ const controlClasses =
 function fieldBorder(hasError: boolean): string {
   return hasError
     ? 'border-danger focus-visible:ring-danger'
-    : 'border-subtle hover:border-focus focus-visible:border-secondary focus-visible:ring-secondary'
+    : 'border-subtle hover:border-focus focus-visible:border-primary focus-visible:ring-primary'
 }
 
 type LabelWrapProps = {
@@ -24,7 +24,7 @@ function LabelWrap({ label, error, children }: LabelWrapProps) {
     <label className="grid gap-1.5">
       <span className="text-sm font-medium text-main">{label}</span>
       {children}
-      {error && <span className="text-sm text-danger">{error}</span>}
+      {error && <span className="text-sm text-danger-text">{error}</span>}
     </label>
   )
 }

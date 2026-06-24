@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
-import { SelectField, TextField } from '@/design-system/components/Field'
+import { CustomSelect } from '@/design-system/components/CustomSelect'
+import { TextField } from '@/design-system/components/Field'
 import {
   AwardIcon,
   CalendarIcon,
@@ -68,11 +69,11 @@ function round1(n: number): number {
 
 function StatusBadge({ published }: { published: boolean }) {
   return published ? (
-    <span className="font-inter rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">
+    <span className="font-inter rounded-full bg-success-bg px-2 py-1 text-xs font-semibold text-success-text">
       Publicado
     </span>
   ) : (
-    <span className="font-inter rounded-full bg-main/10 px-3 py-1 text-xs font-semibold text-main/70">
+    <span className="font-inter rounded-full bg-subtle px-2 py-1 text-xs font-semibold text-muted">
       Borrador
     </span>
   )
@@ -89,7 +90,7 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
     <button
       type="button"
       onClick={onClick}
-      className="font-inter inline-flex items-center gap-1.5 text-sm font-medium text-main/70 transition-colors hover:text-accent"
+      className="font-inter inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm font-medium text-muted transition-colors hover:bg-app hover:text-primary"
     >
       {icon}
       {label}
@@ -116,13 +117,13 @@ function ExamCard({
       </span>
 
       <div className="pr-24">
-        <h3 className="font-nunito text-lg font-bold text-main">{exam.title}</h3>
-        <p className="font-inter mt-0.5 text-sm text-main/70">
+        <h3 className="text-lg font-bold text-main">{exam.title}</h3>
+        <p className="font-inter mt-0.5 text-sm text-muted">
           {exam.subjectName} · {ACADEMIC_LEVEL_LABELS[exam.academicLevel]}
         </p>
       </div>
 
-      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-main/70">
+      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5">
           <FileTextIcon className="size-4" />
           {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
@@ -141,19 +142,19 @@ function ExamCard({
       <div className="font-inter -mt-1 flex items-center gap-1.5 text-sm">
         <AwardIcon className="size-4 text-primary/70" />
         {exam.averageScore != null ? (
-          <span className="text-main/80">
+          <span className="text-main">
             Calificación promedio:{' '}
-            <span className="font-nunito font-bold tabular-nums text-primary">
+            <span className="font-bold tabular-nums text-primary">
               {round1(exam.averageScore)}
             </span>
-            <span className="text-main/50"> / {exam.totalPoints}</span>
+            <span className="text-muted"> / {exam.totalPoints}</span>
           </span>
         ) : (
-          <span className="text-main/50">Sin entregas todavía</span>
+          <span className="text-muted">Sin entregas todavía</span>
         )}
       </div>
 
-      <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-main/10 pt-3">
+      <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-subtle pt-3">
         <CardAction
           icon={<PencilIcon className="size-4" />}
           label="Editar"
@@ -243,8 +244,8 @@ export function ExamListView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-main">Mis Evaluaciones</h1>
-          <p className="font-inter mt-1 text-main/70">
+          <h1 className="text-3xl font-extrabold text-main">Mis Evaluaciones</h1>
+          <p className="font-inter mt-1 text-muted">
             Administra tus exámenes: borradores y publicados.
           </p>
         </div>
@@ -256,53 +257,51 @@ export function ExamListView() {
       {/* Filters */}
       <Card className="grid gap-4 shadow-sm">
         <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-main/50" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
           <input
             type="search"
             value={filters.query}
             onChange={(e) => patch({ query: e.target.value })}
             aria-label="Buscar examen por nombre o materia"
             placeholder="Buscar por título o materia…"
-            className="font-inter w-full rounded-lg border border-main/20 bg-surface py-2 pl-9 pr-3 text-main placeholder:text-main/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+            className="font-inter h-11 w-full rounded-md border border-subtle bg-surface py-2 pl-9 pr-3 text-main transition-colors placeholder:text-muted/70 hover:border-focus focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
           />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <SelectField
+          <CustomSelect
             label="Materia"
             value={filters.subject}
-            onChange={(e) => patch({ subject: e.target.value })}
-          >
-            <option value="all">Todas</option>
-            {subjectOptions.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </SelectField>
+            onChange={(subject) => patch({ subject })}
+            options={[
+              { value: 'all', label: 'Todas' },
+              ...subjectOptions.map((name) => ({ value: name, label: name })),
+            ]}
+          />
 
-          <SelectField
+          <CustomSelect
             label="Nivel"
             value={filters.level}
-            onChange={(e) => patch({ level: e.target.value as AcademicLevel | 'all' })}
-          >
-            <option value="all">Todos</option>
-            {levelOptions.map((level) => (
-              <option key={level} value={level}>
-                {ACADEMIC_LEVEL_LABELS[level]}
-              </option>
-            ))}
-          </SelectField>
+            onChange={(level) => patch({ level: level as AcademicLevel | 'all' })}
+            options={[
+              { value: 'all', label: 'Todos' },
+              ...levelOptions.map((level) => ({
+                value: level,
+                label: ACADEMIC_LEVEL_LABELS[level],
+              })),
+            ]}
+          />
 
-          <SelectField
+          <CustomSelect
             label="Estado"
             value={filters.status}
-            onChange={(e) => patch({ status: e.target.value as StatusFilter })}
-          >
-            <option value="all">Todos</option>
-            <option value="published">Publicado</option>
-            <option value="draft">Borrador</option>
-          </SelectField>
+            onChange={(status) => patch({ status: status as StatusFilter })}
+            options={[
+              { value: 'all', label: 'Todos' },
+              { value: 'published', label: 'Publicado' },
+              { value: 'draft', label: 'Borrador' },
+            ]}
+          />
 
           <TextField
             label="Fecha"
@@ -313,8 +312,8 @@ export function ExamListView() {
         </div>
 
         {filtersActive && (
-          <div className="flex items-center justify-between gap-3 border-t border-main/10 pt-3">
-            <p className="font-inter text-sm text-main/60">
+          <div className="flex items-center justify-between gap-3 border-t border-subtle pt-3">
+            <p className="font-inter text-sm text-muted">
               {filtered.length} {filtered.length === 1 ? 'examen' : 'exámenes'} encontrados
             </p>
             <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)}>
@@ -325,7 +324,10 @@ export function ExamListView() {
       </Card>
 
       {duplicate.isError && (
-        <p role="alert" className="font-inter text-sm text-danger">
+        <p
+          role="alert"
+          className="rounded-md border border-danger/20 bg-danger-bg px-3 py-2 text-sm text-danger-text"
+        >
           No se pudo duplicar el examen
           {duplicate.error instanceof ApiError ? `: ${duplicate.error.message}` : '.'}
         </p>
@@ -339,12 +341,12 @@ export function ExamListView() {
           ))}
         </div>
       ) : isError ? (
-        <Card className="font-inter text-danger shadow-sm">
+        <Card className="font-inter text-danger-text shadow-sm">
           No se pudieron cargar los exámenes
           {error instanceof ApiError ? `: ${error.message}` : '.'}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="font-inter grid gap-3 text-main/70 shadow-sm">
+        <Card className="font-inter grid gap-3 text-muted shadow-sm">
           {filtersActive ? (
             <div className="grid gap-3">
               <p>No se encontraron exámenes con los filtros aplicados.</p>
@@ -354,7 +356,7 @@ export function ExamListView() {
             </div>
           ) : (
             <>
-              <p className="font-nunito text-lg font-bold text-main">
+              <p className="text-lg font-bold text-main">
                 Aún no has creado exámenes.
               </p>
               <p>Crea tu primer examen para empezar a evaluar a tus alumnos.</p>

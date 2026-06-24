@@ -29,23 +29,23 @@ export function OptionCard({ label, text, selected, multiple, onSelect }: Option
       role={multiple ? 'checkbox' : 'radio'}
       aria-checked={selected}
       className={cn(
-        'group relative flex w-full items-center gap-4 rounded-xl bg-white p-4 text-left',
+        'group relative flex w-full items-center gap-4 rounded-xl bg-surface p-4 text-left',
         'cursor-pointer transition-all duration-200 ease-out',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-app',
         // border-2 in both states keeps the box steady (no 1px reflow on select).
         selected
           ? 'border-2 border-primary bg-primary/5 shadow-sm'
-          : 'border-2 border-main/10 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md',
+          : 'border-2 border-subtle hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md',
       )}
     >
       {/* Letter badge → fills with primary once chosen. */}
       <span
         className={cn(
-          'font-nunito flex size-9 shrink-0 items-center justify-center text-sm font-bold transition-colors duration-200',
+          'flex size-9 shrink-0 items-center justify-center text-sm font-bold transition-colors duration-200',
           multiple ? 'rounded-lg' : 'rounded-full',
           selected
             ? 'bg-primary text-white'
-            : 'bg-main/5 text-main/60 group-hover:bg-primary/10 group-hover:text-primary',
+            : 'bg-main/5 text-muted group-hover:bg-primary/10 group-hover:text-primary',
         )}
       >
         {label}
@@ -54,7 +54,7 @@ export function OptionCard({ label, text, selected, multiple, onSelect }: Option
       <span
         className={cn(
           'font-inter flex-1 text-base leading-snug transition-colors',
-          selected ? 'font-semibold text-main' : 'text-main/80',
+          selected ? 'font-semibold text-main' : 'text-main',
         )}
       >
         {text}

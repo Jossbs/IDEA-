@@ -52,21 +52,21 @@ export function AssignDialog({ examId, examTitle, onClose }: AssignDialogProps) 
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-main">Asignar alumnos</h2>
-            <p className="font-inter mt-0.5 text-sm text-main/70">{examTitle}</p>
+            <h2 className="text-xl font-bold text-main">Asignar alumnos</h2>
+            <p className="font-inter mt-0.5 text-sm text-muted">{examTitle}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="text-main/60 transition-colors hover:text-accent"
+            className="text-muted transition-colors hover:text-accent"
           >
             <XIcon />
           </button>
         </div>
 
         {isLoading ? (
-          <p className="font-inter py-8 text-center text-main/70">Cargando…</p>
+          <p className="font-inter py-8 text-center text-muted">Cargando…</p>
         ) : (
           <StudentMultiSelect
             students={students ?? []}
@@ -77,7 +77,7 @@ export function AssignDialog({ examId, examTitle, onClose }: AssignDialogProps) 
         )}
 
         {error && (
-          <p role="alert" className="font-inter mt-3 text-sm text-danger">
+          <p role="alert" className="font-inter mt-3 text-sm text-danger-text">
             {error}
           </p>
         )}

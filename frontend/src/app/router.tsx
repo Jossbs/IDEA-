@@ -3,6 +3,7 @@ import { LoginView } from '@/features/auth/LoginView'
 import { RegisterView } from '@/features/auth/RegisterView'
 import { AttemptReviewView } from '@/features/exams/AttemptReviewView'
 import { ExamBuilderView } from '@/features/exams/ExamBuilderView'
+import { ExamBuilderCanvas } from '@/features/exams/builder/ExamBuilderCanvas'
 import { ExamListView } from '@/features/exams/ExamListView'
 import { ExamPreviewView } from '@/features/exams/ExamPreviewView'
 import { ExamResultsView } from '@/features/exams/ExamResultsView'
@@ -49,6 +50,8 @@ export const router = createBrowserRouter([
       },
       // Distraction-free exam runner lives outside AppLayout (no navbar/sidebar).
       { path: '/exam/:examId/take', element: <StudentFocusView /> },
+      // Canvas builder preview (visual scaffold, full-screen, own top bar).
+      { path: '/exams/builder-preview', element: <ExamBuilderCanvas /> },
     ],
   },
 ])

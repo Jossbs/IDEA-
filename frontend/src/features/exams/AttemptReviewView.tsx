@@ -16,8 +16,8 @@ export function AttemptReviewView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-main">Revisión manual</h1>
-          <p className="font-inter mt-1 text-main/70">
+          <h1 className="text-3xl font-extrabold text-main">Revisión manual</h1>
+          <p className="font-inter mt-1 text-muted">
             Califica las respuestas abiertas para completar la calificación.
           </p>
         </div>
@@ -27,9 +27,9 @@ export function AttemptReviewView() {
       </header>
 
       {isLoading ? (
-        <Card className="font-inter text-main/70 shadow-sm">Cargando entrega…</Card>
+        <Card className="font-inter text-muted shadow-sm">Cargando entrega…</Card>
       ) : isError || !data ? (
-        <Card className="font-inter text-danger shadow-sm">
+        <Card className="font-inter text-danger-text shadow-sm">
           No se pudo cargar la entrega
           {error instanceof ApiError ? `: ${error.message}` : '.'}
         </Card>
@@ -99,22 +99,22 @@ function ReviewForm({
     <>
       <Card className="flex flex-wrap items-center justify-between gap-4 shadow-sm">
         <div>
-          <p className="font-inter text-sm text-main/60">Alumno</p>
-          <p className="font-nunito text-lg font-bold text-main">{review.studentName}</p>
+          <p className="font-inter text-sm text-muted">Alumno</p>
+          <p className="text-lg font-bold text-main">{review.studentName}</p>
         </div>
         <div className="text-right">
-          <p className="font-inter text-sm text-main/60">Calificación con esta revisión</p>
-          <p className="font-nunito text-2xl font-extrabold tabular-nums text-primary">
-            {finalScore} <span className="text-base text-main/40">/ {review.maxScore}</span>
+          <p className="font-inter text-sm text-muted">Calificación con esta revisión</p>
+          <p className="text-2xl font-extrabold tabular-nums text-primary">
+            {finalScore} <span className="text-base text-muted">/ {review.maxScore}</span>
           </p>
-          <p className="font-inter text-xs text-main/50">
+          <p className="font-inter text-xs text-muted">
             (automático {review.autoScore} + manual {manualTotal})
           </p>
         </div>
       </Card>
 
       {alreadyGraded && (
-        <Card className="font-inter bg-accent/10 text-sm text-main/80 shadow-sm">
+        <Card className="font-inter bg-accent/10 text-sm text-main shadow-sm">
           Esta entrega ya fue calificada. Puedes ajustar los puntos y volver a guardar.
         </Card>
       )}
@@ -123,18 +123,18 @@ function ReviewForm({
         {review.items.map((item, index) => (
           <Card key={item.questionId} className="shadow-sm">
             <div className="grid gap-3">
-              <h3 className="font-nunito text-lg font-bold text-main">
+              <h3 className="text-lg font-bold text-main">
                 {index + 1}. {item.questionText}
               </h3>
               <div className="rounded-lg bg-main/5 px-4 py-3">
-                <p className="font-inter text-xs font-semibold uppercase tracking-wide text-main/50">
+                <p className="font-inter text-xs font-semibold uppercase tracking-wide text-muted">
                   Respuesta del alumno
                 </p>
-                <p className="font-inter mt-1 whitespace-pre-wrap text-main/90">
+                <p className="font-inter mt-1 whitespace-pre-wrap text-main">
                   {item.answerText.trim() ? item.answerText : '(sin respuesta)'}
                 </p>
               </div>
-              <label className="font-inter flex items-center gap-3 text-sm font-medium text-main/70">
+              <label className="font-inter flex items-center gap-3 text-sm font-medium text-muted">
                 Puntos otorgados
                 <input
                   type="number"
@@ -143,9 +143,9 @@ function ReviewForm({
                   placeholder="0"
                   value={grades[item.questionId] ?? ''}
                   onChange={(e) => setPoints(item.questionId, item.maxPoints, e.target.value)}
-                  className="w-24 rounded-lg border border-main/20 bg-white px-3 py-2 text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+                  className="w-24 rounded-lg border border-subtle bg-surface px-3 py-2 text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
                 />
-                <span className="text-main/50">/ {item.maxPoints}</span>
+                <span className="text-muted">/ {item.maxPoints}</span>
               </label>
             </div>
           </Card>
@@ -153,7 +153,7 @@ function ReviewForm({
       </section>
 
       {error && (
-        <p role="alert" className="font-inter text-sm text-danger">
+        <p role="alert" className="font-inter text-sm text-danger-text">
           {error}
         </p>
       )}
