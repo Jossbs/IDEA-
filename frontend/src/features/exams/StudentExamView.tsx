@@ -70,7 +70,7 @@ export function StudentExamView() {
         : 'No se pudo cargar el examen.'
     return (
       <Centered>
-        <p className="text-danger">{msg}</p>
+        <p className="text-danger-text">{msg}</p>
         <Button variant="ghost" className="mt-4" onClick={() => navigate('/')}>
           Volver al inicio
         </Button>
@@ -92,7 +92,7 @@ export function StudentExamView() {
   if (total === 0) {
     return (
       <Centered>
-        <p className="text-danger">Este examen no tiene preguntas.</p>
+        <p className="text-danger-text">Este examen no tiene preguntas.</p>
         <Button variant="ghost" className="mt-4" onClick={() => navigate('/')}>
           Volver al inicio
         </Button>
@@ -143,19 +143,19 @@ export function StudentExamView() {
   return (
     <main className="flex min-h-screen flex-col bg-app">
       {/* Header */}
-      <header className="border-b border-main/10 bg-app/80 backdrop-blur-sm">
+      <header className="border-b border-subtle bg-app/80 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div className="min-w-0">
-            <h1 className="font-nunito truncate text-lg font-extrabold text-main">
+            <h1 className="truncate text-lg font-extrabold text-main">
               {exam.title}
             </h1>
             {exam.dueAt && (
-              <p className="font-inter mt-0.5 text-xs text-main/60">
+              <p className="font-inter mt-0.5 text-xs text-muted">
                 Entrega: {formatDeadline(exam.dueAt)}
               </p>
             )}
           </div>
-          <span className="font-nunito text-sm font-bold text-main/70">
+          <span className="text-sm font-bold text-muted">
             Pregunta {currentIndex + 1} de {total}
           </span>
         </div>
@@ -169,11 +169,11 @@ export function StudentExamView() {
 
       {/* Question body */}
       <div className="flex flex-1 items-start justify-center px-6 py-10">
-        <section className="w-full max-w-3xl rounded-xl bg-white p-8 shadow-md sm:p-10">
-          <p className="font-nunito text-xs font-bold uppercase tracking-wide text-accent">
+        <section className="w-full max-w-3xl rounded-xl bg-surface p-8 shadow-md sm:p-10">
+          <p className="text-xs font-bold uppercase tracking-wide text-accent">
             Pregunta {currentIndex + 1}
           </p>
-          <h2 className="font-nunito mt-2 text-2xl font-bold leading-snug text-main sm:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold leading-snug text-main sm:text-3xl">
             {question.questionText}
           </h2>
 
@@ -188,10 +188,10 @@ export function StudentExamView() {
       </div>
 
       {/* Footer nav */}
-      <footer className="border-t border-main/10 bg-app/80 backdrop-blur-sm">
+      <footer className="border-t border-subtle bg-app/80 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-3xl px-6 py-4">
           {submitError && (
-            <p role="alert" className="font-inter mb-3 text-center text-sm text-danger">
+            <p role="alert" className="font-inter mb-3 text-center text-sm text-danger-text">
               {submitError}
             </p>
           )}
@@ -201,7 +201,7 @@ export function StudentExamView() {
               Anterior
             </Button>
 
-            <span className="font-inter hidden text-sm text-main/60 sm:block">
+            <span className="font-inter hidden text-sm text-muted sm:block">
               {answeredCount} de {total} respondidas
             </span>
 
@@ -244,7 +244,7 @@ function QuestionInput({
         onChange={(e) => onSetText(e.target.value)}
         placeholder="Escribe tu respuesta…"
         rows={5}
-        className="font-inter mt-8 w-full resize-y rounded-lg border border-main/20 bg-white px-4 py-3 text-main placeholder:text-main/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-white"
+        className="font-inter mt-8 w-full resize-y rounded-lg border border-subtle bg-surface px-4 py-3 text-main placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-white"
       />
     )
   }
@@ -254,7 +254,7 @@ function QuestionInput({
   return (
     <>
       {multiple && (
-        <p className="font-inter mt-3 text-sm text-main/60">Elige una o varias opciones.</p>
+        <p className="font-inter mt-3 text-sm text-muted">Elige una o varias opciones.</p>
       )}
       <ul className="mt-8 grid gap-3">
         {question.options.map((option, index) => {
@@ -269,19 +269,19 @@ function QuestionInput({
                 aria-pressed={selected}
                 className={cn(
                   'group flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white',
                   selected
                     ? 'border-primary bg-primary/5'
-                    : 'border-main/15 bg-white hover:border-primary/40 hover:bg-main/[0.02]',
+                    : 'border-subtle bg-surface hover:border-primary/40 hover:bg-main/[0.02]',
                 )}
               >
                 <span
                   className={cn(
-                    'font-nunito flex size-9 shrink-0 items-center justify-center border text-sm font-bold transition-colors',
+                    'flex size-9 shrink-0 items-center justify-center border text-sm font-bold transition-colors',
                     multiple ? 'rounded-md' : 'rounded-full',
                     selected
                       ? 'border-primary bg-primary text-white'
-                      : 'border-main/20 bg-main/5 text-main/70 group-hover:border-primary/40',
+                      : 'border-subtle bg-main/5 text-muted group-hover:border-primary/40',
                   )}
                 >
                   {selected ? <CheckIcon className="size-4" /> : optionLabel(index)}
@@ -289,7 +289,7 @@ function QuestionInput({
                 <span
                   className={cn(
                     'font-inter text-base',
-                    selected ? 'font-medium text-main' : 'text-main/80',
+                    selected ? 'font-medium text-main' : 'text-main',
                   )}
                 >
                   {option.optionText}
@@ -305,7 +305,7 @@ function QuestionInput({
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-app px-6 text-center font-inter text-main/70">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-app px-6 text-center font-inter text-muted">
       {children}
     </main>
   )
@@ -327,24 +327,24 @@ function ResultScreen({
   const accredited = !pending && result.score >= result.passingScore
   return (
     <main className="flex min-h-screen items-center justify-center bg-app px-6">
-      <section className="w-full max-w-md rounded-xl bg-white p-10 text-center shadow-md">
-        <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-success/15 text-success">
+      <section className="w-full max-w-md rounded-xl bg-surface p-10 text-center shadow-md">
+        <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-success-bg text-success-text">
           <CheckCircleIcon className="size-8" />
         </span>
-        <h1 className="font-nunito mt-6 text-2xl font-extrabold text-main">¡Examen enviado!</h1>
-        <p className="font-inter mt-2 text-main/70">
+        <h1 className="mt-6 text-2xl font-extrabold text-main">¡Examen enviado!</h1>
+        <p className="font-inter mt-2 text-muted">
           Tus respuestas de <span className="font-semibold">«{title}»</span> se registraron
           correctamente.
         </p>
 
         <div className="mt-6 rounded-lg bg-main/5 px-4 py-4">
-          <p className="font-inter text-sm text-main/60">
+          <p className="font-inter text-sm text-muted">
             {pending ? 'Puntaje automático (parcial)' : 'Tu puntaje'}
           </p>
-          <p className="font-nunito mt-1 text-3xl font-extrabold tabular-nums text-primary">
-            {result.score} <span className="text-lg text-main/40">/ {result.maxScore}</span>
+          <p className="mt-1 text-3xl font-extrabold tabular-nums text-primary">
+            {result.score} <span className="text-lg text-muted">/ {result.maxScore}</span>
           </p>
-          <p className="font-inter mt-1 text-xs text-main/60">
+          <p className="font-inter mt-1 text-xs text-muted">
             Mínimo para acreditar: {result.passingScore}
           </p>
         </div>
@@ -353,7 +353,7 @@ function ResultScreen({
           <p
             className={cn(
               'font-inter mt-4 rounded-lg px-4 py-2 text-sm font-semibold',
-              accredited ? 'bg-success/15 text-success' : 'bg-danger/10 text-danger',
+              accredited ? 'bg-success-bg text-success-text' : 'bg-danger-bg text-danger-text',
             )}
           >
             {accredited ? '¡Acreditaste el examen! ✓' : 'No alcanzaste el puntaje para acreditar.'}
@@ -361,7 +361,7 @@ function ResultScreen({
         )}
 
         {pending && (
-          <p className="font-inter mt-4 text-sm text-main/70">
+          <p className="font-inter mt-4 text-sm text-muted">
             Algunas preguntas de respuesta abierta serán revisadas por tu docente; tu calificación
             final puede aumentar.
           </p>

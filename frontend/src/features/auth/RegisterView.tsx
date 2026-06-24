@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
-import { SelectField, TextField } from '@/design-system/components/Field'
+import { CustomSelect } from '@/design-system/components/CustomSelect'
+import { TextField } from '@/design-system/components/Field'
 import { ApiError } from '@/lib/apiClient'
 import { AuthShell } from './AuthShell'
 import { useAuth } from './AuthContext'
@@ -86,21 +87,19 @@ export function RegisterView() {
           placeholder="Mínimo 8 caracteres"
           required
         />
-        <SelectField
+        <CustomSelect
           label="Soy…"
           value={role}
-          onChange={(e) => setRole(e.target.value as Role)}
+          onChange={(value) => setRole(value as Role)}
           error={fieldErrors.role}
-        >
-          {ROLES.map((r) => (
-            <option key={r} value={r}>
-              {ROLE_LABELS[r]}
-            </option>
-          ))}
-        </SelectField>
+          options={ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] }))}
+        />
 
         {error && (
-          <p role="alert" className="font-inter rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
+          <p
+            role="alert"
+            className="rounded-md border border-danger/20 bg-danger-bg px-3 py-2 text-sm text-danger-text"
+          >
             {error}
           </p>
         )}

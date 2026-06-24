@@ -54,24 +54,24 @@ export function StudentHomeView() {
   return (
     <div className="grid gap-8">
       <header>
-        <h1 className="font-nunito text-3xl font-extrabold text-main">
+        <h1 className="text-3xl font-extrabold text-main">
           Hola, {user?.fullName}
         </h1>
-        <p className="font-inter mt-1 text-main/70">
+        <p className="font-inter mt-1 text-muted">
           Tus exámenes asignados y los que ya fueron calificados.
         </p>
       </header>
 
       {/* Search */}
       <div className="relative max-w-md">
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-main/50" />
+        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Buscar examen por nombre o materia"
           placeholder="Buscar por título o materia…"
-          className="font-inter w-full rounded-lg border border-main/20 bg-white py-2 pl-9 pr-3 text-main placeholder:text-main/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-app"
+          className="font-inter w-full rounded-lg border border-subtle bg-surface py-2 pl-9 pr-3 text-main placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-app"
         />
       </div>
 
@@ -82,12 +82,12 @@ export function StudentHomeView() {
           ))}
         </div>
       ) : isError ? (
-        <Card className="font-inter text-danger shadow-sm">
+        <Card className="font-inter text-danger-text shadow-sm">
           No se pudieron cargar los exámenes
           {error instanceof ApiError ? `: ${error.message}` : '.'}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="font-inter text-main/70 shadow-sm">
+        <Card className="font-inter text-muted shadow-sm">
           {query.trim()
             ? `No se encontraron exámenes que coincidan con «${query}».`
             : 'Aún no tienes exámenes asignados. Vuelve más tarde.'}
@@ -112,13 +112,13 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
   return (
     <Card className="flex flex-col gap-4 shadow-sm">
       <div>
-        <h3 className="font-nunito text-lg font-bold text-main">{exam.title}</h3>
-        <p className="font-inter mt-0.5 text-sm text-main/70">
+        <h3 className="text-lg font-bold text-main">{exam.title}</h3>
+        <p className="font-inter mt-0.5 text-sm text-muted">
           {exam.subjectName} · {ACADEMIC_LEVEL_LABELS[exam.academicLevel]}
         </p>
       </div>
 
-      <div className="font-inter flex flex-col gap-1.5 text-sm text-main/70">
+      <div className="font-inter flex flex-col gap-1.5 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5">
           <FileTextIcon className="size-4" />
           {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
@@ -141,25 +141,25 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
 
       {/* Graded: show the score and whether the student accredited. */}
       {graded && (
-        <div className={cn('rounded-lg px-4 py-3', accredited ? 'bg-success/10' : 'bg-danger/10')}>
+        <div className={cn('rounded-lg px-4 py-3', accredited ? 'bg-success-bg' : 'bg-danger-bg')}>
           <p
             className={cn(
               'font-inter text-xs font-semibold uppercase tracking-wide',
-              accredited ? 'text-success' : 'text-danger',
+              accredited ? 'text-success-text' : 'text-danger-text',
             )}
           >
             {accredited ? 'Acreditado' : 'No acreditado'}
           </p>
           <p
             className={cn(
-              'font-nunito mt-0.5 text-2xl font-extrabold tabular-nums',
-              accredited ? 'text-success' : 'text-danger',
+              'mt-0.5 text-2xl font-extrabold tabular-nums',
+              accredited ? 'text-success-text' : 'text-danger-text',
             )}
           >
             {exam.score}
-            <span className="text-base font-bold text-main/40"> / {exam.maxScore}</span>
+            <span className="text-base font-bold text-muted"> / {exam.maxScore}</span>
           </p>
-          <p className="font-inter mt-0.5 text-xs text-main/60">
+          <p className="font-inter mt-0.5 text-xs text-muted">
             Mínimo para acreditar: {exam.passingScore}
           </p>
         </div>
@@ -170,7 +170,7 @@ function StudentExamCardView({ exam }: { exam: StudentExamCard }) {
             <ClockIcon className="size-4" />
             En revisión del docente
           </p>
-          <p className="font-inter mt-0.5 text-xs text-main/60">
+          <p className="font-inter mt-0.5 text-xs text-muted">
             Puntaje parcial: {exam.score} / {exam.maxScore}
           </p>
         </div>

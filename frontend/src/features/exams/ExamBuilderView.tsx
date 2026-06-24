@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
-import { SelectField, TextField } from '@/design-system/components/Field'
-import { CheckCircleIcon, XIcon } from '@/design-system/icons'
+import { CustomSelect } from '@/design-system/components/CustomSelect'
+import { TextField } from '@/design-system/components/Field'
+import { CheckCircleIcon } from '@/design-system/icons'
+import { useToast } from '@/design-system/toast/ToastProvider'
 import { useSubjects } from '@/features/subjects/api'
 import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
@@ -26,8 +28,6 @@ import {
 } from './types'
 import type { DifficultyLevel, ExamDraft, ExamQuestion, QuestionType } from './types'
 
-type Feedback = { type: 'success' | 'error'; message: string }
-
 /**
  * Teacher-facing exam builder. A progressive-disclosure list of question
  * accordions (only the one being edited is expanded) plus a floating sticky
@@ -38,9 +38,9 @@ type Feedback = { type: 'success' | 'error'; message: string }
 export function ExamBuilderView() {
   const { examId } = useParams()
   const isEdit = Boolean(examId)
+  const toast = useToast()
 
   const [exam, setExam] = useState<ExamDraft>(createExamDraft)
-  const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [hydrated, setHydrated] = useState(false)
   /** Id of the single expanded question (progressive disclosure). */
   const [expandedId, setExpandedId] = useState<string | null>(
@@ -191,19 +191,16 @@ export function ExamBuilderView() {
   function handleSave() {
     const error = validate()
     if (error) {
-      setFeedback({ type: 'error', message: error })
+      toast.error(error)
       return
     }
-    setFeedback(null)
     const payload = toCreateExamPayload(exam)
     const onError = (err: unknown) =>
-      setFeedback({
-        type: 'error',
-        message:
-          err instanceof ApiError
-            ? err.message
-            : 'No se pudo guardar el examen. Inténtalo de nuevo.',
-      })
+      toast.error(
+        err instanceof ApiError
+          ? err.message
+          : 'No se pudo guardar el examen. Inténtalo de nuevo.',
+      )
 
     if (isEdit) {
       updateExam.mutate(payload, { onSuccess: () => navigate('/exams'), onError })
@@ -216,12 +213,11 @@ export function ExamBuilderView() {
         const fresh = createExamDraft()
         setExam(fresh)
         setExpandedId(fresh.questions[0]?.id ?? null)
-        setFeedback({
-          type: 'success',
-          message: wasPublished
+        toast.success(
+          wasPublished
             ? 'Examen creado y publicado correctamente.'
             : 'Borrador guardado correctamente.',
-        })
+        )
       },
       onError,
     })
@@ -229,7 +225,7 @@ export function ExamBuilderView() {
 
   if (isEdit && detailLoading && !hydrated) {
     return (
-      <div className="font-inter py-16 text-center text-main/70">Cargando examen…</div>
+      <div className="font-inter py-16 text-center text-muted">Cargando examen…</div>
     )
   }
 
@@ -237,7 +233,7 @@ export function ExamBuilderView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-main">
+          <h1 className="text-3xl font-extrabold text-main">
             {isEdit ? 'Editar examen' : 'Crear examen'}
           </h1>
           <p className="font-inter mt-1 text-muted">
@@ -256,7 +252,7 @@ export function ExamBuilderView() {
       {/* Section A — general config */}
       <Card className="rounded-xl shadow-sm">
         <div className="grid gap-5">
-          <h2 className="font-nunito text-lg font-semibold text-main">Configuración general</h2>
+          <h2 className="text-lg font-semibold text-main">Configuración general</h2>
 
           <TextField
             label="Título del examen"
@@ -265,20 +261,16 @@ export function ExamBuilderView() {
             placeholder="Ej. Examen parcial de Álgebra"
           />
 
-          <SelectField
+          <CustomSelect
             label="Materia"
+            placeholder={subjectsLoading ? 'Cargando…' : 'Selecciona una materia…'}
+            options={(subjects ?? []).map((subject) => ({
+              value: subject.subjectIdentifier,
+              label: `${subject.subjectName} - ${ACADEMIC_LEVEL_LABELS[subject.academicLevel]}`,
+            }))}
             value={exam.subjectId}
-            onChange={(e) => patch({ subjectId: e.target.value })}
-          >
-            <option value="" disabled>
-              {subjectsLoading ? 'Cargando…' : 'Selecciona una materia…'}
-            </option>
-            {subjects?.map((subject) => (
-              <option key={subject.subjectIdentifier} value={subject.subjectIdentifier}>
-                {subject.subjectName} - {ACADEMIC_LEVEL_LABELS[subject.academicLevel]}
-              </option>
-            ))}
-          </SelectField>
+            onChange={(subjectId) => patch({ subjectId })}
+          />
 
           <label className="grid gap-1.5">
             <span className="font-inter text-sm font-medium text-main">
@@ -310,7 +302,7 @@ export function ExamBuilderView() {
       <Card className="rounded-xl shadow-sm">
         <div className="grid gap-5">
           <div>
-            <h2 className="font-nunito text-lg font-semibold text-main">Puntuación y entrega</h2>
+            <h2 className="text-lg font-semibold text-main">Puntuación y entrega</h2>
             <p className="font-inter mt-1 text-sm text-muted">
               Define cuánto vale el examen, el puntaje mínimo para acreditar y la fecha límite de
               entrega.
@@ -355,7 +347,7 @@ export function ExamBuilderView() {
       <Card className="rounded-xl shadow-sm">
         <div className="grid gap-3">
           <div>
-            <h2 className="font-nunito text-lg font-semibold text-main">Asignar a alumnos</h2>
+            <h2 className="text-lg font-semibold text-main">Asignar a alumnos</h2>
             <p className="font-inter mt-1 text-sm text-muted">
               Elige a qué alumnos va dirigido este examen. Puedes dejarlo vacío y asignarlo después.
             </p>
@@ -372,7 +364,7 @@ export function ExamBuilderView() {
       {/* Section B — progressive-disclosure reactivo builder */}
       <section className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-nunito text-lg font-semibold text-main">
+          <h2 className="text-lg font-semibold text-main">
             Preguntas{' '}
             <span className="font-inter text-base font-medium text-muted">
               ({exam.questions.length})
@@ -434,36 +426,6 @@ export function ExamBuilderView() {
           </Button>
         </div>
       </div>
-
-      {/* Floating toast — replaces the old full-width error banner. */}
-      {feedback && (
-        <div
-          role="status"
-          className="animate-fade-slide-up fixed bottom-24 right-4 z-50 w-[min(92vw,24rem)] sm:right-6"
-        >
-          <div
-            className={cn(
-              'font-inter flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-lg',
-              feedback.type === 'success'
-                ? 'border-success-text/20 bg-success-bg text-success-text'
-                : 'border-danger-text/20 bg-danger-bg text-danger-text',
-            )}
-          >
-            {feedback.type === 'success' && (
-              <CheckCircleIcon className="mt-0.5 size-5 shrink-0" />
-            )}
-            <p className="flex-1 font-medium">{feedback.message}</p>
-            <button
-              type="button"
-              onClick={() => setFeedback(null)}
-              aria-label="Cerrar notificación"
-              className="-mr-1 shrink-0 rounded-md p-0.5 opacity-70 transition-opacity hover:opacity-100"
-            >
-              <XIcon className="size-4" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

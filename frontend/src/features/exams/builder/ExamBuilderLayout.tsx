@@ -45,7 +45,7 @@ export function ExamBuilderLayout({
 
           {/* Autosave status */}
           <span className="hidden shrink-0 items-center gap-1.5 text-xs font-medium text-muted sm:inline-flex">
-            <CheckCircleIcon className="size-4 text-success" />
+            <CheckCircleIcon className="size-4 text-success-text" />
             Autoguardado
           </span>
 

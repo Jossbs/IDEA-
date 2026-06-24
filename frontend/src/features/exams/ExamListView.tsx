@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
-import { SelectField, TextField } from '@/design-system/components/Field'
+import { CustomSelect } from '@/design-system/components/CustomSelect'
+import { TextField } from '@/design-system/components/Field'
 import {
   AwardIcon,
   CalendarIcon,
@@ -116,7 +117,7 @@ function ExamCard({
       </span>
 
       <div className="pr-24">
-        <h3 className="font-nunito text-lg font-bold text-main">{exam.title}</h3>
+        <h3 className="text-lg font-bold text-main">{exam.title}</h3>
         <p className="font-inter mt-0.5 text-sm text-muted">
           {exam.subjectName} · {ACADEMIC_LEVEL_LABELS[exam.academicLevel]}
         </p>
@@ -143,7 +144,7 @@ function ExamCard({
         {exam.averageScore != null ? (
           <span className="text-main">
             Calificación promedio:{' '}
-            <span className="font-nunito font-bold tabular-nums text-primary">
+            <span className="font-bold tabular-nums text-primary">
               {round1(exam.averageScore)}
             </span>
             <span className="text-muted"> / {exam.totalPoints}</span>
@@ -243,7 +244,7 @@ export function ExamListView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-main">Mis Evaluaciones</h1>
+          <h1 className="text-3xl font-extrabold text-main">Mis Evaluaciones</h1>
           <p className="font-inter mt-1 text-muted">
             Administra tus exámenes: borradores y publicados.
           </p>
@@ -268,41 +269,39 @@ export function ExamListView() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <SelectField
+          <CustomSelect
             label="Materia"
             value={filters.subject}
-            onChange={(e) => patch({ subject: e.target.value })}
-          >
-            <option value="all">Todas</option>
-            {subjectOptions.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </SelectField>
+            onChange={(subject) => patch({ subject })}
+            options={[
+              { value: 'all', label: 'Todas' },
+              ...subjectOptions.map((name) => ({ value: name, label: name })),
+            ]}
+          />
 
-          <SelectField
+          <CustomSelect
             label="Nivel"
             value={filters.level}
-            onChange={(e) => patch({ level: e.target.value as AcademicLevel | 'all' })}
-          >
-            <option value="all">Todos</option>
-            {levelOptions.map((level) => (
-              <option key={level} value={level}>
-                {ACADEMIC_LEVEL_LABELS[level]}
-              </option>
-            ))}
-          </SelectField>
+            onChange={(level) => patch({ level: level as AcademicLevel | 'all' })}
+            options={[
+              { value: 'all', label: 'Todos' },
+              ...levelOptions.map((level) => ({
+                value: level,
+                label: ACADEMIC_LEVEL_LABELS[level],
+              })),
+            ]}
+          />
 
-          <SelectField
+          <CustomSelect
             label="Estado"
             value={filters.status}
-            onChange={(e) => patch({ status: e.target.value as StatusFilter })}
-          >
-            <option value="all">Todos</option>
-            <option value="published">Publicado</option>
-            <option value="draft">Borrador</option>
-          </SelectField>
+            onChange={(status) => patch({ status: status as StatusFilter })}
+            options={[
+              { value: 'all', label: 'Todos' },
+              { value: 'published', label: 'Publicado' },
+              { value: 'draft', label: 'Borrador' },
+            ]}
+          />
 
           <TextField
             label="Fecha"
@@ -325,7 +324,10 @@ export function ExamListView() {
       </Card>
 
       {duplicate.isError && (
-        <p role="alert" className="font-inter rounded-md bg-danger-bg px-3 py-2 text-sm text-danger-text">
+        <p
+          role="alert"
+          className="rounded-md border border-danger/20 bg-danger-bg px-3 py-2 text-sm text-danger-text"
+        >
           No se pudo duplicar el examen
           {duplicate.error instanceof ApiError ? `: ${duplicate.error.message}` : '.'}
         </p>
@@ -354,7 +356,7 @@ export function ExamListView() {
             </div>
           ) : (
             <>
-              <p className="font-nunito text-lg font-bold text-main">
+              <p className="text-lg font-bold text-main">
                 Aún no has creado exámenes.
               </p>
               <p>Crea tu primer examen para empezar a evaluar a tus alumnos.</p>

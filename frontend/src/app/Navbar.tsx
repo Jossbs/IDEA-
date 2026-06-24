@@ -73,7 +73,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={handleLogout}
-              className="font-sans rounded-md border border-focus px-3 py-1.5 text-sm font-medium text-main transition-colors hover:bg-app focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="font-sans rounded-md border border-focus px-3 py-1.5 text-sm font-medium text-main transition-colors hover:bg-app focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Salir
             </button>

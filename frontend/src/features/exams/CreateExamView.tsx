@@ -208,7 +208,7 @@ export function CreateExamView() {
 
   if (isEdit && detailLoading && !hydrated) {
     return (
-      <div className="font-inter py-16 text-center text-main/70">Cargando examen…</div>
+      <div className="font-inter py-16 text-center text-muted">Cargando examen…</div>
     )
   }
 
@@ -216,10 +216,10 @@ export function CreateExamView() {
     <div className="grid gap-8 pb-28">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-main">
+          <h1 className="text-3xl font-extrabold text-main">
             {isEdit ? 'Editar examen' : 'Crear examen'}
           </h1>
-          <p className="font-inter mt-1 text-main/70">
+          <p className="font-inter mt-1 text-muted">
             Estructura el examen y agrega tus reactivos manualmente.
           </p>
         </div>
@@ -231,7 +231,7 @@ export function CreateExamView() {
       {/* Section A — general config */}
       <Card className="shadow-sm">
         <div className="grid gap-5">
-          <h2 className="font-nunito text-xl font-bold text-main">Configuración general</h2>
+          <h2 className="text-xl font-bold text-main">Configuración general</h2>
 
           <TextField
             label="Título del examen"
@@ -256,7 +256,7 @@ export function CreateExamView() {
           </SelectField>
 
           <label className="grid gap-1.5">
-            <span className="font-inter text-sm font-medium text-main/70">
+            <span className="font-inter text-sm font-medium text-muted">
               Descripción (opcional)
             </span>
             <textarea
@@ -264,11 +264,11 @@ export function CreateExamView() {
               onChange={(e) => patch({ description: e.target.value })}
               placeholder="Instrucciones generales para el alumno…"
               rows={3}
-              className="font-inter w-full resize-y rounded-lg border border-main/20 bg-white px-3 py-2 text-main placeholder:text-main/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+              className="font-inter w-full resize-y rounded-lg border border-subtle bg-surface px-3 py-2 text-main placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
             />
           </label>
 
-          <label className="font-inter flex w-fit items-center gap-2 text-sm text-main/80">
+          <label className="font-inter flex w-fit items-center gap-2 text-sm text-main">
             <input
               type="checkbox"
               className="size-4 accent-accent"
@@ -284,8 +284,8 @@ export function CreateExamView() {
       <Card className="shadow-sm">
         <div className="grid gap-5">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-main">Puntuación y entrega</h2>
-            <p className="font-inter mt-1 text-sm text-main/70">
+            <h2 className="text-xl font-bold text-main">Puntuación y entrega</h2>
+            <p className="font-inter mt-1 text-sm text-muted">
               Define cuánto vale el examen, el puntaje mínimo para acreditar y la fecha límite de
               entrega.
             </p>
@@ -329,8 +329,8 @@ export function CreateExamView() {
       <Card className="shadow-sm">
         <div className="grid gap-3">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-main">Asignar a alumnos</h2>
-            <p className="font-inter mt-1 text-sm text-main/70">
+            <h2 className="text-xl font-bold text-main">Asignar a alumnos</h2>
+            <p className="font-inter mt-1 text-sm text-muted">
               Elige a qué alumnos va dirigido este examen. Puedes dejarlo vacío y asignarlo después.
             </p>
           </div>
@@ -346,7 +346,7 @@ export function CreateExamView() {
       {/* Section B — dynamic reactivo builder */}
       <section className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-nunito text-xl font-bold text-main">Preguntas</h2>
+          <h2 className="text-xl font-bold text-main">Preguntas</h2>
           <PointsTag distributed={distributedPoints(exam.questions)} total={exam.totalPoints} />
         </div>
 
@@ -382,7 +382,7 @@ export function CreateExamView() {
           role="status"
           className={cn(
             'font-inter rounded-lg px-4 py-3 text-sm',
-            feedback.type === 'success' ? 'bg-success/15 text-success' : 'bg-danger/10 text-danger',
+            feedback.type === 'success' ? 'bg-success-bg text-success-text' : 'bg-danger-bg text-danger-text',
           )}
         >
           {feedback.message}
@@ -413,7 +413,7 @@ function PointsBalance({ distributed, total }: { distributed: number; total: num
     <div
       className={cn(
         'font-inter flex flex-wrap items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm',
-        balanced ? 'bg-success/10 text-success' : 'bg-accent/10 text-accent',
+        balanced ? 'bg-success-bg text-success-text' : 'bg-accent/10 text-accent',
       )}
     >
       <span className="font-semibold">
@@ -437,7 +437,7 @@ function PointsTag({ distributed, total }: { distributed: number; total: number 
     <span
       className={cn(
         'font-inter rounded-full px-3 py-1 text-xs font-semibold tabular-nums',
-        balanced ? 'bg-success/20 text-success' : 'bg-accent/15 text-accent',
+        balanced ? 'bg-success-bg text-success-text' : 'bg-accent/15 text-accent',
       )}
     >
       {distributed} / {total} pts
