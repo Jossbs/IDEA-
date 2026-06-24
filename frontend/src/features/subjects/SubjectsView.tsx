@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
+import { ConfirmDialog } from '@/design-system/components/ConfirmDialog'
+import { Switch } from '@/design-system/components/Switch'
 import { BanIcon, PencilIcon, PowerIcon, TrashIcon } from '@/design-system/icons'
+import { useToast } from '@/design-system/toast/ToastProvider'
+import { cn } from '@/lib/cn'
 import { useDeleteSubject, useSetSubjectActive, useSubjects } from './api'
 import { SubjectFormPanel } from './SubjectFormPanel'
 import { ACADEMIC_LEVEL_LABELS } from './types'
@@ -13,26 +16,58 @@ import type { Subject } from './types'
  * container, so an `auto` column would size to its own content and break
  * alignment with the header.
  */
-const ROW_GRID =
-  'grid grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)_8rem_17rem] items-center gap-4'
+const ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_7rem_9rem] items-center gap-4'
 
-/** Sage-green badge for active records; neutral for deactivated ones. */
+/** Soft status pill: success-tinted for active records, neutral for inactive. */
 function StatusBadge({ active }: { active: boolean }) {
   return active ? (
-    <span className="font-inter inline-block rounded-full bg-success/20 px-3 py-1 text-sm font-medium text-success">
+    <span className="inline-flex items-center rounded-full bg-success-bg px-2 py-1 text-xs font-medium text-success-text">
       Activa
     </span>
   ) : (
-    <span className="font-inter inline-block rounded-full bg-main/10 px-3 py-1 text-sm font-medium text-main/60">
+    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-muted">
       Inactiva
     </span>
   )
 }
 
+/** Transparent, hairline-bordered icon button that takes a semantic color on hover. */
+function RowAction({
+  icon,
+  label,
+  hover,
+  onClick,
+  disabled,
+}: {
+  icon: React.ReactNode
+  label: string
+  hover: string
+  onClick: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className={cn(
+        'rounded-md border border-subtle p-2 text-muted transition-colors disabled:opacity-50',
+        hover,
+      )}
+    >
+      {icon}
+    </button>
+  )
+}
+
 /** Teacher-facing screen to manage the subjects catalog. */
 export function SubjectsView() {
+  const toast = useToast()
   const [includeInactive, setIncludeInactive] = useState(false)
   const [editing, setEditing] = useState<Subject | undefined>(undefined)
+  const [toDelete, setToDelete] = useState<Subject | undefined>(undefined)
 
   const { data: subjects, isLoading, isError, error } = useSubjects(includeInactive)
   const setActive = useSetSubjectActive()
@@ -40,21 +75,39 @@ export function SubjectsView() {
 
   const hasSubjects = subjects && subjects.length > 0
 
-  function handleDelete(subject: Subject) {
-    const confirmed = window.confirm(
-      `¿Eliminar la materia "${subject.subjectName}"? Esta acción no se puede deshacer.`,
+  function handleToggleActive(subject: Subject) {
+    const next = !subject.activeRecord
+    setActive.mutate(
+      { id: subject.subjectIdentifier, active: next },
+      {
+        onSuccess: () =>
+          toast.success(`Materia ${next ? 'activada' : 'desactivada'}.`),
+        onError: (e) =>
+          toast.error(e instanceof Error ? e.message : 'No se pudo cambiar el estado.'),
+      },
     )
-    if (!confirmed) return
-    deleteSubject.mutate(subject.subjectIdentifier)
-    if (editing?.subjectIdentifier === subject.subjectIdentifier) setEditing(undefined)
+  }
+
+  function confirmDelete() {
+    if (!toDelete) return
+    const target = toDelete
+    deleteSubject.mutate(target.subjectIdentifier, {
+      onSuccess: () => {
+        toast.success(`Materia "${target.subjectName}" eliminada.`)
+        if (editing?.subjectIdentifier === target.subjectIdentifier) setEditing(undefined)
+        setToDelete(undefined)
+      },
+      onError: (e) =>
+        toast.error(e instanceof Error ? e.message : 'No se pudo eliminar la materia.'),
+    })
   }
 
   return (
     <div className="grid gap-8">
       {/* Page header */}
       <header>
-        <h1 className="font-nunito text-3xl font-extrabold text-main">Materias</h1>
-        <p className="font-inter mt-1 text-main/60">
+        <h1 className="text-3xl font-bold text-main">Materias</h1>
+        <p className="mt-1 text-muted">
           Catálogo de materias académicas a las que pertenece un examen.
         </p>
       </header>
@@ -62,36 +115,41 @@ export function SubjectsView() {
       {/* Two columns: subjects table (left) + persistent form panel (right) */}
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem] lg:items-start">
         <section className="grid gap-4">
-          <label className="font-inter flex w-fit items-center gap-2 text-sm text-main/70">
-            <input
-              type="checkbox"
-              className="size-4 accent-accent"
+          {/* Inactive filter — visual switch (logic unchanged). */}
+          <div className="flex w-fit items-center gap-2.5">
+            <Switch
               checked={includeInactive}
-              onChange={(e) => setIncludeInactive(e.target.checked)}
+              onChange={setIncludeInactive}
+              aria-label="Mostrar materias inactivas"
             />
-            Mostrar materias inactivas
-          </label>
+            <span
+              onClick={() => setIncludeInactive(!includeInactive)}
+              className="cursor-pointer select-none text-sm text-muted"
+            >
+              Mostrar materias inactivas
+            </span>
+          </div>
 
-          {isLoading && (
-            <Card className="font-inter text-main/60 shadow-sm">Cargando materias…</Card>
-          )}
+          {isLoading && <Card className="text-muted">Cargando materias…</Card>}
 
           {isError && (
-            <Card className="font-inter text-danger shadow-sm">
+            <Card className="text-danger-text">
               No se pudieron cargar las materias: {(error as Error).message}
             </Card>
           )}
 
           {!isLoading && !isError && !hasSubjects && (
-            <Card className="font-inter text-main/60 shadow-sm">
+            <Card className="text-muted">
               Aún no hay materias. Crea la primera con “Nueva materia”.
             </Card>
           )}
 
           {!isLoading && !isError && hasSubjects && (
-            <div className="grid gap-3">
+            <div className="overflow-hidden rounded-lg border border-subtle bg-surface shadow-sm">
               {/* Header row */}
-              <div className={`${ROW_GRID} px-5 text-sm font-medium text-main/50`}>
+              <div
+                className={`${ROW_GRID} border-b border-subtle px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted`}
+              >
                 <span>Nombre</span>
                 <span>Nivel</span>
                 <span>Estado</span>
@@ -99,50 +157,44 @@ export function SubjectsView() {
               </div>
 
               {/* Data rows */}
-              <ul className="grid gap-3">
+              <ul>
                 {subjects.map((subject) => (
                   <li
                     key={subject.subjectIdentifier}
-                    className={`${ROW_GRID} rounded-xl bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-card`}
+                    className={`${ROW_GRID} border-b border-subtle px-5 py-3.5 transition-colors last:border-0 hover:bg-app`}
                   >
-                    <span className="font-inter truncate font-semibold text-main">
-                      {subject.subjectName}
-                    </span>
-                    <span className="font-inter text-main/70">
+                    <span className="truncate font-semibold text-main">{subject.subjectName}</span>
+                    <span className="text-muted">
                       {ACADEMIC_LEVEL_LABELS[subject.academicLevel]}
                     </span>
                     <span>
                       <StatusBadge active={subject.activeRecord} />
                     </span>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="secondary" size="sm" onClick={() => setEditing(subject)}>
-                        <PencilIcon />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="accent"
-                        size="sm"
-                        disabled={setActive.isPending}
-                        onClick={() =>
-                          setActive.mutate({
-                            id: subject.subjectIdentifier,
-                            active: !subject.activeRecord,
-                          })
+                    <div className="flex justify-end gap-1.5">
+                      <RowAction
+                        icon={<PencilIcon />}
+                        label="Editar"
+                        hover="hover:border-primary hover:text-primary"
+                        onClick={() => setEditing(subject)}
+                      />
+                      <RowAction
+                        icon={subject.activeRecord ? <BanIcon /> : <PowerIcon />}
+                        label={subject.activeRecord ? 'Desactivar' : 'Activar'}
+                        hover={
+                          subject.activeRecord
+                            ? 'hover:border-warning hover:bg-warning-bg hover:text-warning-text'
+                            : 'hover:border-success hover:bg-success-bg hover:text-success-text'
                         }
-                      >
-                        {subject.activeRecord ? <BanIcon /> : <PowerIcon />}
-                        {subject.activeRecord ? 'Desactivar' : 'Activar'}
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        aria-label={`Eliminar ${subject.subjectName}`}
-                        title="Eliminar"
+                        disabled={setActive.isPending}
+                        onClick={() => handleToggleActive(subject)}
+                      />
+                      <RowAction
+                        icon={<TrashIcon />}
+                        label="Eliminar"
+                        hover="hover:border-danger hover:bg-danger-bg hover:text-danger-text"
                         disabled={deleteSubject.isPending}
-                        onClick={() => handleDelete(subject)}
-                      >
-                        <TrashIcon />
-                      </Button>
+                        onClick={() => setToDelete(subject)}
+                      />
                     </div>
                   </li>
                 ))}
@@ -160,6 +212,18 @@ export function SubjectsView() {
           />
         </aside>
       </div>
+
+      {/* Delete confirmation — replaces window.confirm(). */}
+      {toDelete && (
+        <ConfirmDialog
+          title={`¿Eliminar la materia "${toDelete.subjectName}"?`}
+          description="Esta acción no se puede deshacer."
+          confirmLabel="Eliminar"
+          pending={deleteSubject.isPending}
+          onConfirm={confirmDelete}
+          onCancel={() => setToDelete(undefined)}
+        />
+      )}
     </div>
   )
 }
