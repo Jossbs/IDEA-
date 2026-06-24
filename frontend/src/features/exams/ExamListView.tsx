@@ -68,11 +68,11 @@ function round1(n: number): number {
 
 function StatusBadge({ published }: { published: boolean }) {
   return published ? (
-    <span className="font-inter rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">
+    <span className="font-inter rounded-full bg-success-bg px-2 py-1 text-xs font-semibold text-success-text">
       Publicado
     </span>
   ) : (
-    <span className="font-inter rounded-full bg-main/10 px-3 py-1 text-xs font-semibold text-main/70">
+    <span className="font-inter rounded-full bg-subtle px-2 py-1 text-xs font-semibold text-muted">
       Borrador
     </span>
   )
@@ -89,7 +89,7 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
     <button
       type="button"
       onClick={onClick}
-      className="font-inter inline-flex items-center gap-1.5 text-sm font-medium text-main/70 transition-colors hover:text-accent"
+      className="font-inter inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm font-medium text-muted transition-colors hover:bg-app hover:text-primary"
     >
       {icon}
       {label}
@@ -117,12 +117,12 @@ function ExamCard({
 
       <div className="pr-24">
         <h3 className="font-nunito text-lg font-bold text-main">{exam.title}</h3>
-        <p className="font-inter mt-0.5 text-sm text-main/70">
+        <p className="font-inter mt-0.5 text-sm text-muted">
           {exam.subjectName} · {ACADEMIC_LEVEL_LABELS[exam.academicLevel]}
         </p>
       </div>
 
-      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-main/70">
+      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5">
           <FileTextIcon className="size-4" />
           {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
@@ -141,19 +141,19 @@ function ExamCard({
       <div className="font-inter -mt-1 flex items-center gap-1.5 text-sm">
         <AwardIcon className="size-4 text-primary/70" />
         {exam.averageScore != null ? (
-          <span className="text-main/80">
+          <span className="text-main">
             Calificación promedio:{' '}
             <span className="font-nunito font-bold tabular-nums text-primary">
               {round1(exam.averageScore)}
             </span>
-            <span className="text-main/50"> / {exam.totalPoints}</span>
+            <span className="text-muted"> / {exam.totalPoints}</span>
           </span>
         ) : (
-          <span className="text-main/50">Sin entregas todavía</span>
+          <span className="text-muted">Sin entregas todavía</span>
         )}
       </div>
 
-      <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-main/10 pt-3">
+      <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-subtle pt-3">
         <CardAction
           icon={<PencilIcon className="size-4" />}
           label="Editar"
@@ -244,7 +244,7 @@ export function ExamListView() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-nunito text-3xl font-extrabold text-main">Mis Evaluaciones</h1>
-          <p className="font-inter mt-1 text-main/70">
+          <p className="font-inter mt-1 text-muted">
             Administra tus exámenes: borradores y publicados.
           </p>
         </div>
