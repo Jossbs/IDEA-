@@ -9,7 +9,7 @@ const controlClasses =
 function fieldBorder(hasError: boolean): string {
   return hasError
     ? 'border-danger focus-visible:ring-danger'
-    : 'border-subtle hover:border-focus focus-visible:border-secondary focus-visible:ring-secondary'
+    : 'border-subtle hover:border-focus focus-visible:border-primary focus-visible:ring-primary'
 }
 
 type LabelWrapProps = {
