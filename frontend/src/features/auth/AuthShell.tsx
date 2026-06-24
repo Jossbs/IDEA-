@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Card } from '@/design-system/components/Card'
+import { BrandLockup } from '@/design-system/BrandLockup'
 
 /** Centered, distraction-free shell for the login/register screens. */
 export function AuthShell({
@@ -14,21 +14,24 @@ export function AuthShell({
   footer: ReactNode
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-base px-4 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
+      {/* Full width with side margins on mobile; capped on larger screens. */}
       <div className="w-full max-w-md">
-        <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <span className="inline-flex rounded-xl bg-white p-2 shadow-sm">
-            <img src="/logo.png" alt="Logotipo de IDEA" className="h-14 w-auto" />
-          </span>
+        <div className="mb-6 flex flex-col items-center gap-4 text-center">
+          {/* Brand lockup, height-driven + aspect-locked, centered over the card. */}
+          <div className="h-16 w-auto aspect-[350/100]">
+            <BrandLockup />
+          </div>
           <div>
-            <h1 className="font-nunito text-2xl font-extrabold text-secondary">{title}</h1>
-            <p className="font-inter mt-1 text-sm text-secondary/70">{subtitle}</p>
+            <h1 className="text-2xl font-bold text-main">{title}</h1>
+            <p className="mt-1 text-sm text-muted">{subtitle}</p>
           </div>
         </div>
 
-        <Card className="shadow-card">{children}</Card>
+        {/* Surface card: hairline border + soft elevation, generous padding. */}
+        <div className="rounded-lg border border-subtle bg-surface p-8 shadow-lg">{children}</div>
 
-        <p className="font-inter mt-6 text-center text-sm text-secondary/70">{footer}</p>
+        <p className="mt-6 text-center text-sm text-muted">{footer}</p>
       </div>
     </main>
   )
