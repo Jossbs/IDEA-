@@ -1,16 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
-import {
-  CheckCircleIcon,
-  CheckIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@/design-system/icons'
+import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@/design-system/icons'
 import { useStudentExam, useSubmitAttempt } from '@/features/student/api'
 import type { AnswerSubmission, AttemptResult, StudentQuestion } from '@/features/student/types'
 import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
+import { OptionCard } from './components/OptionCard'
 
 /** Local answer state per question: chosen option ids and/or free text. */
 type Answer = { optionIds: string[]; text: string }
@@ -39,10 +35,13 @@ function isAnswered(a: Answer | undefined): boolean {
 }
 
 /**
- * Distraction-free exam runner. Loads the sanitized exam by id, paginates one
- * question at a time, supports the four question types, and submits to grade.
+ * Focus-mode exam runner: one question per screen, an immersive thick progress
+ * bar, and a soft fade/slide transition on every navigation. Loads the
+ * sanitized exam, paginates the four question types and submits to grade.
+ *
+ * Drop-in replacement for the previous paginated `StudentExamView`.
  */
-export function StudentExamView() {
+export function StudentFocusView() {
   const { examId } = useParams()
   const navigate = useNavigate()
   const { data: exam, isLoading, isError, error } = useStudentExam(examId)
@@ -142,34 +141,44 @@ export function StudentExamView() {
 
   return (
     <main className="flex min-h-screen flex-col bg-app">
-      {/* Header */}
-      <header className="border-b border-main/10 bg-app/80 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-6 py-4">
-          <div className="min-w-0">
-            <h1 className="font-nunito truncate text-lg font-extrabold text-main">
-              {exam.title}
-            </h1>
-            {exam.dueAt && (
-              <p className="font-inter mt-0.5 text-xs text-main/60">
-                Entrega: {formatDeadline(exam.dueAt)}
-              </p>
-            )}
+      {/* Persuasive header: thick rounded progress bar + clear counter. */}
+      <header className="sticky top-0 z-10 border-b border-main/10 bg-app/85 backdrop-blur-sm">
+        <div className="mx-auto w-full max-w-3xl px-6 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="font-nunito truncate text-lg font-extrabold text-main">
+                {exam.title}
+              </h1>
+              {exam.dueAt && (
+                <p className="font-inter mt-0.5 text-xs text-main/60">
+                  Entrega: {formatDeadline(exam.dueAt)}
+                </p>
+              )}
+            </div>
+            <span className="font-nunito shrink-0 text-sm font-extrabold tabular-nums text-main">
+              Pregunta {currentIndex + 1} <span className="text-main/40">de {total}</span>
+            </span>
           </div>
-          <span className="font-nunito text-sm font-bold text-main/70">
-            Pregunta {currentIndex + 1} de {total}
-          </span>
-        </div>
-        <div className="h-1 w-full bg-main/10">
-          <div
-            className="h-full bg-primary transition-all duration-300 ease-out"
-            style={{ width: `${progressPct}%` }}
-          />
+
+          <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-main/10">
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
+              style={{ width: `${progressPct}%` }}
+              role="progressbar"
+              aria-valuenow={currentIndex + 1}
+              aria-valuemin={1}
+              aria-valuemax={total}
+            />
+          </div>
         </div>
       </header>
 
-      {/* Question body */}
+      {/* One question per screen — re-mounts (key) so it fades/slides on change. */}
       <div className="flex flex-1 items-start justify-center px-6 py-10">
-        <section className="w-full max-w-3xl rounded-xl bg-white p-8 shadow-md sm:p-10">
+        <section
+          key={question.questionId}
+          className="w-full max-w-3xl animate-fade-slide-up rounded-xl bg-white p-8 shadow-md sm:p-10"
+        >
           <p className="font-nunito text-xs font-bold uppercase tracking-wide text-accent">
             Pregunta {currentIndex + 1}
           </p>
@@ -188,7 +197,7 @@ export function StudentExamView() {
       </div>
 
       {/* Footer nav */}
-      <footer className="border-t border-main/10 bg-app/80 backdrop-blur-sm">
+      <footer className="sticky bottom-0 border-t border-main/10 bg-app/85 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-3xl px-6 py-4">
           {submitError && (
             <p role="alert" className="font-inter mb-3 text-center text-sm text-danger">
@@ -196,7 +205,11 @@ export function StudentExamView() {
             </p>
           )}
           <div className="flex items-center justify-between gap-4">
-            <Button variant="ghost" onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))} disabled={isFirst}>
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+              disabled={isFirst}
+            >
               <ChevronLeftIcon className="size-5" />
               Anterior
             </Button>
@@ -211,7 +224,10 @@ export function StudentExamView() {
                 {submit.isPending ? 'Enviando…' : 'Finalizar y enviar'}
               </Button>
             ) : (
-              <Button variant="ghost" onClick={() => setCurrentIndex((i) => Math.min(total - 1, i + 1))}>
+              <Button
+                variant="primary"
+                onClick={() => setCurrentIndex((i) => Math.min(total - 1, i + 1))}
+              >
                 Siguiente
                 <ChevronRightIcon className="size-5" />
               </Button>
@@ -223,7 +239,7 @@ export function StudentExamView() {
   )
 }
 
-/** Renders the right input for the question type. */
+/** Renders the right input for the question type using interactive cards. */
 function QuestionInput({
   question,
   answer,
@@ -244,7 +260,7 @@ function QuestionInput({
         onChange={(e) => onSetText(e.target.value)}
         placeholder="Escribe tu respuesta…"
         rows={5}
-        className="font-inter mt-8 w-full resize-y rounded-lg border border-main/20 bg-white px-4 py-3 text-main placeholder:text-main/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-white"
+        className="font-inter mt-8 w-full resize-y rounded-xl border-2 border-main/10 bg-white px-4 py-3 text-main transition-colors placeholder:text-main/40 focus-visible:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       />
     )
   }
@@ -257,47 +273,19 @@ function QuestionInput({
         <p className="font-inter mt-3 text-sm text-main/60">Elige una o varias opciones.</p>
       )}
       <ul className="mt-8 grid gap-3">
-        {question.options.map((option, index) => {
-          const selected = answer.optionIds.includes(option.optionId)
-          return (
-            <li key={option.optionId}>
-              <button
-                type="button"
-                onClick={() =>
-                  multiple ? onToggleMultiple(option.optionId) : onPickSingle(option.optionId)
-                }
-                aria-pressed={selected}
-                className={cn(
-                  'group flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white',
-                  selected
-                    ? 'border-primary bg-primary/5'
-                    : 'border-main/15 bg-white hover:border-primary/40 hover:bg-main/[0.02]',
-                )}
-              >
-                <span
-                  className={cn(
-                    'font-nunito flex size-9 shrink-0 items-center justify-center border text-sm font-bold transition-colors',
-                    multiple ? 'rounded-md' : 'rounded-full',
-                    selected
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-main/20 bg-main/5 text-main/70 group-hover:border-primary/40',
-                  )}
-                >
-                  {selected ? <CheckIcon className="size-4" /> : optionLabel(index)}
-                </span>
-                <span
-                  className={cn(
-                    'font-inter text-base',
-                    selected ? 'font-medium text-main' : 'text-main/80',
-                  )}
-                >
-                  {option.optionText}
-                </span>
-              </button>
-            </li>
-          )
-        })}
+        {question.options.map((option, index) => (
+          <li key={option.optionId}>
+            <OptionCard
+              label={optionLabel(index)}
+              text={option.optionText}
+              selected={answer.optionIds.includes(option.optionId)}
+              multiple={multiple}
+              onSelect={() =>
+                multiple ? onToggleMultiple(option.optionId) : onPickSingle(option.optionId)
+              }
+            />
+          </li>
+        ))}
       </ul>
     </>
   )
@@ -327,8 +315,8 @@ function ResultScreen({
   const accredited = !pending && result.score >= result.passingScore
   return (
     <main className="flex min-h-screen items-center justify-center bg-app px-6">
-      <section className="w-full max-w-md rounded-xl bg-white p-10 text-center shadow-md">
-        <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-success/15 text-success">
+      <section className="w-full max-w-md animate-fade-slide-up rounded-xl bg-white p-10 text-center shadow-md">
+        <span className="mx-auto flex size-16 animate-pop-in items-center justify-center rounded-full bg-success/15 text-success">
           <CheckCircleIcon className="size-8" />
         </span>
         <h1 className="font-nunito mt-6 text-2xl font-extrabold text-main">¡Examen enviado!</h1>

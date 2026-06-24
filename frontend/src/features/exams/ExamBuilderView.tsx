@@ -3,12 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/design-system/components/Button'
 import { Card } from '@/design-system/components/Card'
 import { SelectField, TextField } from '@/design-system/components/Field'
+import { CheckCircleIcon } from '@/design-system/icons'
 import { useSubjects } from '@/features/subjects/api'
 import { ACADEMIC_LEVEL_LABELS } from '@/features/subjects/types'
 import { ApiError } from '@/lib/apiClient'
 import { cn } from '@/lib/cn'
 import { useCreateExam, useExam, useStudents, useUpdateExam } from './api'
-import { QuestionCard } from './components/QuestionCard'
+import { QuestionAccordion } from './components/QuestionAccordion'
 import { StudentMultiSelect } from './components/StudentMultiSelect'
 import {
   createExamDraft,
@@ -23,18 +24,28 @@ import {
   selectionMode,
   toCreateExamPayload,
 } from './types'
-import type { DifficultyLevel, ExamDraft, QuestionType } from './types'
+import type { DifficultyLevel, ExamDraft, ExamQuestion, QuestionType } from './types'
 
 type Feedback = { type: 'success' | 'error'; message: string }
 
-/** Teacher-facing screen to author a full exam (general config + reactivos). */
-export function CreateExamView() {
+/**
+ * Teacher-facing exam builder. A progressive-disclosure list of question
+ * accordions (only the one being edited is expanded) plus a floating sticky
+ * action bar so "Guardar" is always reachable without scrolling to the bottom.
+ *
+ * Drop-in replacement for the long-form `CreateExamView`.
+ */
+export function ExamBuilderView() {
   const { examId } = useParams()
   const isEdit = Boolean(examId)
 
   const [exam, setExam] = useState<ExamDraft>(createExamDraft)
   const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [hydrated, setHydrated] = useState(false)
+  /** Id of the single expanded question (progressive disclosure). */
+  const [expandedId, setExpandedId] = useState<string | null>(
+    () => exam.questions[0]?.id ?? null,
+  )
   const { data: subjects, isLoading: subjectsLoading } = useSubjects(false)
   const { data: students } = useStudents()
   const { data: detail, isLoading: detailLoading } = useExam(examId)
@@ -45,12 +56,15 @@ export function CreateExamView() {
   // In edit mode, seed the form from the fetched exam once it arrives.
   useEffect(() => {
     if (isEdit && detail && !hydrated) {
-      setExam(detailToDraft(detail))
+      const draft = detailToDraft(detail)
+      setExam(draft)
+      setExpandedId(draft.questions[0]?.id ?? null)
       setHydrated(true)
     }
   }, [isEdit, detail, hydrated])
 
   const pending = isEdit ? updateExam.isPending : createExam.isPending
+  const distributed = distributedPoints(exam.questions)
 
   function patch(changes: Partial<ExamDraft>) {
     setExam((prev) => ({ ...prev, ...changes }))
@@ -58,12 +72,18 @@ export function CreateExamView() {
 
   // --- question / option mutations (immutable) ---
   function addQuestion() {
-    setExam((prev) => ({ ...prev, questions: [...prev.questions, createQuestion()] }))
+    const question = createQuestion()
+    setExam((prev) => ({ ...prev, questions: [...prev.questions, question] }))
+    setExpandedId(question.id) // jump straight into editing the new one
   }
   function removeQuestion(questionId: string) {
     setExam((prev) => ({ ...prev, questions: prev.questions.filter((q) => q.id !== questionId) }))
+    setExpandedId((current) => (current === questionId ? null : current))
   }
-  function mapQuestion(questionId: string, fn: (q: ExamDraft['questions'][number]) => ExamDraft['questions'][number]) {
+  function toggleExpanded(questionId: string) {
+    setExpandedId((current) => (current === questionId ? null : questionId))
+  }
+  function mapQuestion(questionId: string, fn: (q: ExamQuestion) => ExamQuestion) {
     setExam((prev) => ({
       ...prev,
       questions: prev.questions.map((q) => (q.id === questionId ? fn(q) : q)),
@@ -155,14 +175,13 @@ export function CreateExamView() {
         return `Marca exactamente una respuesta correcta en la pregunta ${n}.`
       }
     }
-    // Scoring rules (point 3 & 4): a valid worth, a reachable accreditation
-    // threshold, and a distribution that adds up to the declared total.
+    // Scoring rules: a valid worth, a reachable accreditation threshold, and a
+    // distribution that adds up to the declared total.
     if (exam.totalPoints < 1) return 'El puntaje total del examen debe ser al menos 1.'
     if (exam.passingScore < 1) return 'El puntaje de acreditación debe ser al menos 1.'
     if (exam.passingScore > exam.totalPoints) {
       return `El puntaje de acreditación no puede ser mayor que el puntaje total (${exam.totalPoints}).`
     }
-    const distributed = distributedPoints(exam.questions)
     if (distributed !== exam.totalPoints) {
       return `Has distribuido ${distributed} ${distributed === 1 ? 'punto' : 'puntos'} entre las preguntas, pero el examen vale ${exam.totalPoints}. Ajusta los puntos de las preguntas o el puntaje total.`
     }
@@ -194,7 +213,9 @@ export function CreateExamView() {
     const wasPublished = exam.isPublished
     createExam.mutate(payload, {
       onSuccess: () => {
-        setExam(createExamDraft())
+        const fresh = createExamDraft()
+        setExam(fresh)
+        setExpandedId(fresh.questions[0]?.id ?? null)
         setFeedback({
           type: 'success',
           message: wasPublished
@@ -213,7 +234,7 @@ export function CreateExamView() {
   }
 
   return (
-    <div className="grid gap-8 pb-28">
+    <div className="grid gap-8 pb-32">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-nunito text-3xl font-extrabold text-main">
@@ -275,7 +296,8 @@ export function CreateExamView() {
               checked={exam.isPublished}
               onChange={(e) => patch({ isPublished: e.target.checked })}
             />
-            Publicar examen (visible para los estudiantes). Si lo dejas sin marcar, queda como borrador.
+            Publicar examen (visible para los estudiantes). Si lo dejas sin marcar, queda como
+            borrador.
           </label>
         </div>
       </Card>
@@ -321,7 +343,7 @@ export function CreateExamView() {
             />
           </div>
 
-          <PointsBalance distributed={distributedPoints(exam.questions)} total={exam.totalPoints} />
+          <PointsBalance distributed={distributed} total={exam.totalPoints} />
         </div>
       </Card>
 
@@ -343,18 +365,25 @@ export function CreateExamView() {
         </div>
       </Card>
 
-      {/* Section B — dynamic reactivo builder */}
-      <section className="grid gap-4">
+      {/* Section B — progressive-disclosure reactivo builder */}
+      <section className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-nunito text-xl font-bold text-main">Preguntas</h2>
-          <PointsTag distributed={distributedPoints(exam.questions)} total={exam.totalPoints} />
+          <h2 className="font-nunito text-xl font-bold text-main">
+            Preguntas{' '}
+            <span className="font-inter text-base font-medium text-main/50">
+              ({exam.questions.length})
+            </span>
+          </h2>
+          <PointsTag distributed={distributed} total={exam.totalPoints} />
         </div>
 
         {exam.questions.map((question, index) => (
-          <QuestionCard
+          <QuestionAccordion
             key={question.id}
             question={question}
             index={index}
+            expanded={expandedId === question.id}
+            onToggle={() => toggleExpanded(question.id)}
             canRemove={exam.questions.length > 1}
             onTextChange={(text) => setQuestionText(question.id, text)}
             onTypeChange={(type) => setType(question.id, type)}
@@ -389,17 +418,22 @@ export function CreateExamView() {
         </div>
       )}
 
-      {/* Fixed primary CTA */}
-      <div className="fixed bottom-6 right-6 z-20">
-        <Button
-          variant="accent"
-          size="lg"
-          onClick={handleSave}
-          disabled={pending}
-          className="shadow-lg"
-        >
-          {pending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Guardar Examen Completo'}
-        </Button>
+      {/* Floating sticky action bar — Guardar is always one click away. */}
+      <div className="pointer-events-none sticky bottom-4 z-20 flex justify-center">
+        <div className="pointer-events-auto flex w-full max-w-3xl items-center justify-between gap-4 rounded-2xl border border-main/10 bg-surface/90 px-5 py-3 shadow-lg backdrop-blur-sm">
+          <span
+            className={cn(
+              'font-inter flex items-center gap-2 text-sm font-semibold tabular-nums',
+              distributed === exam.totalPoints ? 'text-success' : 'text-accent',
+            )}
+          >
+            {distributed === exam.totalPoints && <CheckCircleIcon className="size-4" />}
+            {distributed} / {exam.totalPoints} pts
+          </span>
+          <Button variant="accent" size="lg" onClick={handleSave} disabled={pending}>
+            {pending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Guardar Examen Completo'}
+          </Button>
+        </div>
       </div>
     </div>
   )

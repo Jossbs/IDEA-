@@ -23,7 +23,7 @@ function StatusBadge({ active }: { active: boolean }) {
       Activa
     </span>
   ) : (
-    <span className="font-inter inline-block rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary/60">
+    <span className="font-inter inline-block rounded-full bg-main/10 px-3 py-1 text-sm font-medium text-main/60">
       Inactiva
     </span>
   )
@@ -53,8 +53,8 @@ export function SubjectsView() {
     <div className="grid gap-8">
       {/* Page header */}
       <header>
-        <h1 className="font-nunito text-3xl font-extrabold text-secondary">Materias</h1>
-        <p className="font-inter mt-1 text-secondary/60">
+        <h1 className="font-nunito text-3xl font-extrabold text-main">Materias</h1>
+        <p className="font-inter mt-1 text-main/60">
           Catálogo de materias académicas a las que pertenece un examen.
         </p>
       </header>
@@ -62,7 +62,7 @@ export function SubjectsView() {
       {/* Two columns: subjects table (left) + persistent form panel (right) */}
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem] lg:items-start">
         <section className="grid gap-4">
-          <label className="font-inter flex w-fit items-center gap-2 text-sm text-secondary/70">
+          <label className="font-inter flex w-fit items-center gap-2 text-sm text-main/70">
             <input
               type="checkbox"
               className="size-4 accent-accent"
@@ -73,7 +73,7 @@ export function SubjectsView() {
           </label>
 
           {isLoading && (
-            <Card className="font-inter text-secondary/60 shadow-sm">Cargando materias…</Card>
+            <Card className="font-inter text-main/60 shadow-sm">Cargando materias…</Card>
           )}
 
           {isError && (
@@ -83,7 +83,7 @@ export function SubjectsView() {
           )}
 
           {!isLoading && !isError && !hasSubjects && (
-            <Card className="font-inter text-secondary/60 shadow-sm">
+            <Card className="font-inter text-main/60 shadow-sm">
               Aún no hay materias. Crea la primera con “Nueva materia”.
             </Card>
           )}
@@ -91,7 +91,7 @@ export function SubjectsView() {
           {!isLoading && !isError && hasSubjects && (
             <div className="grid gap-3">
               {/* Header row */}
-              <div className={`${ROW_GRID} px-5 text-sm font-medium text-secondary/50`}>
+              <div className={`${ROW_GRID} px-5 text-sm font-medium text-main/50`}>
                 <span>Nombre</span>
                 <span>Nivel</span>
                 <span>Estado</span>
@@ -105,10 +105,10 @@ export function SubjectsView() {
                     key={subject.subjectIdentifier}
                     className={`${ROW_GRID} rounded-xl bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-card`}
                   >
-                    <span className="font-inter truncate font-semibold text-secondary">
+                    <span className="font-inter truncate font-semibold text-main">
                       {subject.subjectName}
                     </span>
-                    <span className="font-inter text-secondary/70">
+                    <span className="font-inter text-main/70">
                       {ACADEMIC_LEVEL_LABELS[subject.academicLevel]}
                     </span>
                     <span>

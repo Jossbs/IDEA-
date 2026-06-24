@@ -39,7 +39,7 @@ export function LoginView() {
       footer={
         <>
           ¿No tienes cuenta?{' '}
-          <Link to="/register" className="font-semibold text-accent hover:underline">
+          <Link to="/register" className="font-semibold text-secondary hover:underline">
             Crear cuenta
           </Link>
         </>
@@ -66,12 +66,15 @@ export function LoginView() {
         />
 
         {error && (
-          <p role="alert" className="font-inter rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
+          <p
+            role="alert"
+            className="font-inter rounded-md border border-danger/20 bg-danger-bg px-3 py-2 text-sm text-danger-text"
+          >
             {error}
           </p>
         )}
 
-        <Button type="submit" variant="accent" size="lg" fullWidth disabled={pending}>
+        <Button type="submit" variant="primary" size="lg" fullWidth disabled={pending}>
           {pending ? 'Entrando…' : 'Iniciar sesión'}
         </Button>
       </form>

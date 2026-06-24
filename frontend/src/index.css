@@ -1,41 +1,125 @@
 /* Google Fonts first (@import rules must precede everything else) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Nunito:wght@600;700;800&display=swap');
 @import 'tailwindcss';
 
 /* ───────────────────────────────────────────────────────────
  * IDEA — Design tokens (single source of truth)
- * "Warm, accessible minimalism". Visual identity follows the
- * 60-30-10 rule; every utility derives from these theme variables.
+ * "Minimalist, formal, sophisticated". Mobile-first. Every utility
+ * derives from these theme variables so a single edit re-skins the app.
+ *
+ * Semantic color architecture (token → utility):
+ *   BRAND     primary #1A365D (navy)   · secondary #00B4D8 (cyan)
+ *   NEUTRALS  app #F8FAFC · surface #FFFFFF · main (text) #334155 ·
+ *             muted #64748B · subtle (border) #E2E8F0 · focus #CBD5E1
+ *   STATUS    success/warning/danger/info, each with a soft -bg and a
+ *             strong -text variant for badges & alerts.
+ *
+ * Note: `accent` is kept as an alias of `secondary` (same cyan) so legacy
+ * `*-accent` utilities keep resolving during the redesign migration.
  * ─────────────────────────────────────────────────────────── */
 @theme {
-  /* ── Palette (60-30-10) ── */
-  --color-primary: #3a506b; /* slate blue — structure & navigation (60%) */
-  --color-primary-hover: #32465e;
-  --color-primary-active: #2b3c50;
+  /* ── Brand ── */
+  --color-primary: #1a365d; /* navy — structure & navigation, primary buttons */
+  --color-primary-hover: #122643;
+  --color-primary-active: #0d1d33; /* internal :active shade */
 
-  --color-base: #f9f6f0; /* oat white — page background, reduces eye strain */
-  --color-surface: #ffffff; /* pure white — cards / containers */
+  --color-secondary: #00b4d8; /* cyan — highlights & primary CTAs */
+  --color-secondary-hover: #0096b4;
+  --color-secondary-active: #0083a0; /* internal :active shade */
 
-  --color-secondary: #4a403a; /* ash brown — text & borders (30%) */
+  /* accent === secondary (legacy alias, do not remove until migration done) */
+  --color-accent: #00b4d8;
+  --color-accent-hover: #0096b4;
+  --color-accent-active: #0083a0;
 
-  --color-accent: #d96c4a; /* terracotta — CTAs (10%) */
-  --color-accent-hover: #cb5e3c;
-  --color-accent-active: #b85234;
+  /* ── Neutrals (layout & typography) ── */
+  --color-app: #f8fafc; /* page background */
+  --color-surface: #ffffff; /* cards / modals / forms */
+  --color-main: #334155; /* main text */
+  --color-muted: #64748b; /* muted / secondary text */
+  --color-subtle: #e2e8f0; /* hairline borders (inputs, table rows, cards) */
+  --color-focus: #cbd5e1; /* hover / focus border */
 
-  --color-success: #5c8065; /* sage green */
-  --color-danger: #b8505e; /* muted crimson */
+  /* ── Status (solid · soft bg · strong text) ── */
+  --color-success: #10b981;
+  --color-success-bg: #d1fae5;
+  --color-success-text: #047857;
+
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fef3c7;
+  --color-warning-text: #b45309;
+
+  --color-danger: #ef4444;
+  --color-danger-bg: #fee2e2;
+  --color-danger-text: #b91c1c;
+
+  --color-info: #3b82f6;
+  --color-info-bg: #dbeafe;
+  --color-info-text: #1d4ed8;
 
   /* ── Typography ── */
-  --font-sans: 'Inter', system-ui, sans-serif; /* body / UI default */
-  --font-heading: 'Nunito', system-ui, sans-serif; /* headings */
-  /* Explicit aliases so `font-inter` / `font-nunito` utilities exist too */
+  --font-sans: 'Inter', 'Roboto', system-ui, sans-serif; /* body / UI default */
+  --font-heading: 'Inter', 'Roboto', system-ui, sans-serif; /* formal headings */
+  /* Explicit aliases so `font-inter` / `font-roboto` / `font-nunito` exist too */
   --font-inter: 'Inter', system-ui, sans-serif;
+  --font-roboto: 'Roboto', system-ui, sans-serif;
   --font-nunito: 'Nunito', system-ui, sans-serif;
+
+  /* ── Base corner radius (6px) ── */
+  --radius: 0.375rem;
 
   /* ── Soft elevation (only to lift cards off the base) ── */
   --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+
+  /* ── Motion (focus-mode transitions & micro-interactions) ──
+   * Registering these as theme tokens exposes `animate-fade-slide-up`,
+   * `animate-fade-in` and `animate-pop-in` utilities. */
+  --animate-fade-slide-up: fade-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in: fade-in 0.25s ease-out;
+  --animate-pop-in: pop-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-/* v4 default radii already satisfy 8–12px: rounded-lg = 8px, rounded-xl = 12px. */
+/* Radii: base `rounded`/`rounded-md` = 6px; rounded-lg = 8px, rounded-xl = 12px. */
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Honor users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
 
 @layer base {
   html,
@@ -45,7 +129,7 @@
   }
 
   body {
-    @apply bg-base text-secondary font-sans antialiased;
+    @apply bg-app text-main font-sans antialiased;
   }
 
   h1,
@@ -54,11 +138,11 @@
   h4,
   h5,
   h6 {
-    @apply font-heading font-bold text-secondary;
+    @apply font-heading font-bold text-main;
   }
 
   /* Accessibility: a single, consistent keyboard focus ring everywhere. */
   :focus-visible {
-    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-base;
+    @apply outline-none ring-2 ring-secondary ring-offset-2 ring-offset-app;
   }
 }

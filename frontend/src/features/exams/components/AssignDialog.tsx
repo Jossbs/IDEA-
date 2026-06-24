@@ -40,7 +40,7 @@ export function AssignDialog({ examId, examTitle, onClose }: AssignDialogProps) 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-secondary/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-main/40 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={`Asignar alumnos a ${examTitle}`}
@@ -52,21 +52,21 @@ export function AssignDialog({ examId, examTitle, onClose }: AssignDialogProps) 
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-nunito text-xl font-bold text-secondary">Asignar alumnos</h2>
-            <p className="font-inter mt-0.5 text-sm text-secondary/70">{examTitle}</p>
+            <h2 className="font-nunito text-xl font-bold text-main">Asignar alumnos</h2>
+            <p className="font-inter mt-0.5 text-sm text-main/70">{examTitle}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="text-secondary/60 transition-colors hover:text-accent"
+            className="text-main/60 transition-colors hover:text-accent"
           >
             <XIcon />
           </button>
         </div>
 
         {isLoading ? (
-          <p className="font-inter py-8 text-center text-secondary/70">Cargando…</p>
+          <p className="font-inter py-8 text-center text-main/70">Cargando…</p>
         ) : (
           <StudentMultiSelect
             students={students ?? []}

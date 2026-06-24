@@ -2,14 +2,14 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react
 import { cn } from '@/lib/cn'
 
 const controlClasses =
-  'w-full rounded-lg border bg-surface px-3 py-2 text-base text-secondary ' +
-  'transition-colors duration-150 placeholder:text-secondary/40 ' +
+  'w-full rounded-md border bg-surface px-3 py-2 text-base text-main ' +
+  'transition-colors duration-150 placeholder:text-muted/70 ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-surface'
 
 function fieldBorder(hasError: boolean): string {
   return hasError
     ? 'border-danger focus-visible:ring-danger'
-    : 'border-secondary/20 focus-visible:ring-accent'
+    : 'border-subtle hover:border-focus focus-visible:border-secondary focus-visible:ring-secondary'
 }
 
 type LabelWrapProps = {
@@ -22,7 +22,7 @@ type LabelWrapProps = {
 function LabelWrap({ label, error, children }: LabelWrapProps) {
   return (
     <label className="grid gap-1.5">
-      <span className="text-sm font-medium text-secondary/70">{label}</span>
+      <span className="text-sm font-medium text-main">{label}</span>
       {children}
       {error && <span className="text-sm text-danger">{error}</span>}
     </label>

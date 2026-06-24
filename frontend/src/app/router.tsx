@@ -2,11 +2,11 @@ import { createBrowserRouter } from 'react-router-dom'
 import { LoginView } from '@/features/auth/LoginView'
 import { RegisterView } from '@/features/auth/RegisterView'
 import { AttemptReviewView } from '@/features/exams/AttemptReviewView'
-import { CreateExamView } from '@/features/exams/CreateExamView'
+import { ExamBuilderView } from '@/features/exams/ExamBuilderView'
 import { ExamListView } from '@/features/exams/ExamListView'
 import { ExamPreviewView } from '@/features/exams/ExamPreviewView'
 import { ExamResultsView } from '@/features/exams/ExamResultsView'
-import { StudentExamView } from '@/features/exams/StudentExamView'
+import { StudentFocusView } from '@/features/exams/StudentFocusView'
 import { StudentResultView } from '@/features/student/StudentResultView'
 import { SubjectsView } from '@/features/subjects/SubjectsView'
 import { AppLayout } from './AppLayout'
@@ -35,8 +35,8 @@ export const router = createBrowserRouter([
             children: [
               { path: 'subjects', element: <SubjectsView /> },
               { path: 'exams', element: <ExamListView /> },
-              { path: 'exams/new', element: <CreateExamView /> },
-              { path: 'exams/:examId/edit', element: <CreateExamView /> },
+              { path: 'exams/new', element: <ExamBuilderView /> },
+              { path: 'exams/:examId/edit', element: <ExamBuilderView /> },
               { path: 'exams/:examId/preview', element: <ExamPreviewView /> },
               { path: 'exams/:examId/results', element: <ExamResultsView /> },
               {
@@ -48,7 +48,7 @@ export const router = createBrowserRouter([
         ],
       },
       // Distraction-free exam runner lives outside AppLayout (no navbar/sidebar).
-      { path: '/exam/:examId/take', element: <StudentExamView /> },
+      { path: '/exam/:examId/take', element: <StudentFocusView /> },
     ],
   },
 ])

@@ -72,7 +72,7 @@ function StatusBadge({ published }: { published: boolean }) {
       Publicado
     </span>
   ) : (
-    <span className="font-inter rounded-full bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary/70">
+    <span className="font-inter rounded-full bg-main/10 px-3 py-1 text-xs font-semibold text-main/70">
       Borrador
     </span>
   )
@@ -89,7 +89,7 @@ function CardAction({ icon, label, onClick }: CardActionProps) {
     <button
       type="button"
       onClick={onClick}
-      className="font-inter inline-flex items-center gap-1.5 text-sm font-medium text-secondary/70 transition-colors hover:text-accent"
+      className="font-inter inline-flex items-center gap-1.5 text-sm font-medium text-main/70 transition-colors hover:text-accent"
     >
       {icon}
       {label}
@@ -116,13 +116,13 @@ function ExamCard({
       </span>
 
       <div className="pr-24">
-        <h3 className="font-nunito text-lg font-bold text-secondary">{exam.title}</h3>
-        <p className="font-inter mt-0.5 text-sm text-secondary/70">
+        <h3 className="font-nunito text-lg font-bold text-main">{exam.title}</h3>
+        <p className="font-inter mt-0.5 text-sm text-main/70">
           {exam.subjectName} · {ACADEMIC_LEVEL_LABELS[exam.academicLevel]}
         </p>
       </div>
 
-      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-secondary/70">
+      <div className="font-inter flex flex-wrap items-center gap-4 text-sm text-main/70">
         <span className="inline-flex items-center gap-1.5">
           <FileTextIcon className="size-4" />
           {exam.questionCount} {exam.questionCount === 1 ? 'pregunta' : 'preguntas'}
@@ -141,19 +141,19 @@ function ExamCard({
       <div className="font-inter -mt-1 flex items-center gap-1.5 text-sm">
         <AwardIcon className="size-4 text-primary/70" />
         {exam.averageScore != null ? (
-          <span className="text-secondary/80">
+          <span className="text-main/80">
             Calificación promedio:{' '}
             <span className="font-nunito font-bold tabular-nums text-primary">
               {round1(exam.averageScore)}
             </span>
-            <span className="text-secondary/50"> / {exam.totalPoints}</span>
+            <span className="text-main/50"> / {exam.totalPoints}</span>
           </span>
         ) : (
-          <span className="text-secondary/50">Sin entregas todavía</span>
+          <span className="text-main/50">Sin entregas todavía</span>
         )}
       </div>
 
-      <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-secondary/10 pt-3">
+      <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-main/10 pt-3">
         <CardAction
           icon={<PencilIcon className="size-4" />}
           label="Editar"
@@ -243,8 +243,8 @@ export function ExamListView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-secondary">Mis Evaluaciones</h1>
-          <p className="font-inter mt-1 text-secondary/70">
+          <h1 className="font-nunito text-3xl font-extrabold text-main">Mis Evaluaciones</h1>
+          <p className="font-inter mt-1 text-main/70">
             Administra tus exámenes: borradores y publicados.
           </p>
         </div>
@@ -256,14 +256,14 @@ export function ExamListView() {
       {/* Filters */}
       <Card className="grid gap-4 shadow-sm">
         <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-secondary/50" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-main/50" />
           <input
             type="search"
             value={filters.query}
             onChange={(e) => patch({ query: e.target.value })}
             aria-label="Buscar examen por nombre o materia"
             placeholder="Buscar por título o materia…"
-            className="font-inter w-full rounded-lg border border-secondary/20 bg-surface py-2 pl-9 pr-3 text-secondary placeholder:text-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
+            className="font-inter w-full rounded-lg border border-main/20 bg-surface py-2 pl-9 pr-3 text-main placeholder:text-main/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
           />
         </div>
 
@@ -313,8 +313,8 @@ export function ExamListView() {
         </div>
 
         {filtersActive && (
-          <div className="flex items-center justify-between gap-3 border-t border-secondary/10 pt-3">
-            <p className="font-inter text-sm text-secondary/60">
+          <div className="flex items-center justify-between gap-3 border-t border-main/10 pt-3">
+            <p className="font-inter text-sm text-main/60">
               {filtered.length} {filtered.length === 1 ? 'examen' : 'exámenes'} encontrados
             </p>
             <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)}>
@@ -335,7 +335,7 @@ export function ExamListView() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" aria-busy="true">
           {Array.from({ length: 6 }, (_, i) => (
-            <Card key={i} className="h-40 animate-pulse bg-secondary/[0.04] shadow-sm" />
+            <Card key={i} className="h-40 animate-pulse bg-main/[0.04] shadow-sm" />
           ))}
         </div>
       ) : isError ? (
@@ -344,7 +344,7 @@ export function ExamListView() {
           {error instanceof ApiError ? `: ${error.message}` : '.'}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="font-inter grid gap-3 text-secondary/70 shadow-sm">
+        <Card className="font-inter grid gap-3 text-main/70 shadow-sm">
           {filtersActive ? (
             <div className="grid gap-3">
               <p>No se encontraron exámenes con los filtros aplicados.</p>
@@ -354,7 +354,7 @@ export function ExamListView() {
             </div>
           ) : (
             <>
-              <p className="font-nunito text-lg font-bold text-secondary">
+              <p className="font-nunito text-lg font-bold text-main">
                 Aún no has creado exámenes.
               </p>
               <p>Crea tu primer examen para empezar a evaluar a tus alumnos.</p>

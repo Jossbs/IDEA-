@@ -43,10 +43,10 @@ export function ExamResultsView() {
     <div className="grid gap-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-nunito text-3xl font-extrabold text-secondary">
+          <h1 className="font-nunito text-3xl font-extrabold text-main">
             Resultados de la Evaluación
           </h1>
-          <p className="font-inter mt-1 text-secondary/70">
+          <p className="font-inter mt-1 text-main/70">
             Calificaciones generadas automáticamente tras la aplicación del examen.
           </p>
         </div>
@@ -56,7 +56,7 @@ export function ExamResultsView() {
       </header>
 
       {isLoading ? (
-        <Card className="font-inter text-secondary/70 shadow-sm">Cargando resultados…</Card>
+        <Card className="font-inter text-main/70 shadow-sm">Cargando resultados…</Card>
       ) : isError || !data ? (
         <Card className="font-inter text-danger shadow-sm">
           No se pudieron cargar los resultados
@@ -131,8 +131,8 @@ function ResultsContent({ data }: { data: ExamResults }) {
       {/* Grades table */}
       <section className="grid gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-nunito text-xl font-bold text-secondary">Calificaciones</h2>
-          <span className="font-inter text-sm text-secondary/60">
+          <h2 className="font-nunito text-xl font-bold text-main">Calificaciones</h2>
+          <span className="font-inter text-sm text-main/60">
             Aprobatoria mínima: {passingScore} / {maxScore}
           </span>
         </div>
@@ -145,7 +145,7 @@ function ResultsContent({ data }: { data: ExamResults }) {
         )}
 
         {results.length === 0 ? (
-          <Card className="font-inter text-secondary/70 shadow-sm">
+          <Card className="font-inter text-main/70 shadow-sm">
             Aún no hay entregas para este examen.
           </Card>
         ) : (
@@ -153,7 +153,7 @@ function ResultsContent({ data }: { data: ExamResults }) {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="font-inter border-b border-secondary/10 bg-secondary/[0.03] text-xs font-semibold uppercase tracking-wide text-secondary/60">
+                  <tr className="font-inter border-b border-main/10 bg-main/[0.03] text-xs font-semibold uppercase tracking-wide text-main/60">
                     <th className="px-6 py-3">Alumno</th>
                     <th className="px-6 py-3">Entrega</th>
                     <th className="px-6 py-3 text-right">Puntaje</th>
@@ -164,19 +164,19 @@ function ResultsContent({ data }: { data: ExamResults }) {
                   {results.map((result) => (
                     <tr
                       key={result.attemptId}
-                      className="border-b border-secondary/[0.06] transition-colors last:border-0 hover:bg-secondary/[0.02]"
+                      className="border-b border-main/[0.06] transition-colors last:border-0 hover:bg-main/[0.02]"
                     >
                       <td className="px-6 py-4">
-                        <span className="font-medium text-secondary">{result.studentName}</span>
+                        <span className="font-medium text-main">{result.studentName}</span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-secondary/60">
+                      <td className="px-6 py-4 text-sm text-main/60">
                         {formatDateTime(result.submittedAt)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className="font-nunito text-lg font-bold tabular-nums text-primary">
                           {round1(result.score)}
                         </span>
-                        <span className="font-inter text-sm text-secondary/40"> / {maxScore}</span>
+                        <span className="font-inter text-sm text-main/40"> / {maxScore}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-3">
@@ -197,7 +197,7 @@ function ResultsContent({ data }: { data: ExamResults }) {
                             onClick={() => handleReset(result)}
                             disabled={reset.isPending}
                             title="Permitir que el alumno presente de nuevo el examen"
-                            className="font-inter inline-flex items-center gap-1.5 text-sm font-semibold text-secondary/60 transition-colors hover:text-accent disabled:opacity-50"
+                            className="font-inter inline-flex items-center gap-1.5 text-sm font-semibold text-main/60 transition-colors hover:text-accent disabled:opacity-50"
                           >
                             <RotateIcon className="size-4" />
                             Reintento
@@ -231,7 +231,7 @@ function KpiCard({ icon, label, value, hint, emphasizeValue = true }: KpiCardPro
         <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
           {icon}
         </span>
-        <span className="font-inter text-sm font-medium text-secondary/60">{label}</span>
+        <span className="font-inter text-sm font-medium text-main/60">{label}</span>
       </div>
       <p
         className={cn(
@@ -242,7 +242,7 @@ function KpiCard({ icon, label, value, hint, emphasizeValue = true }: KpiCardPro
       >
         {value}
       </p>
-      {hint && <p className="font-inter -mt-1 text-sm text-secondary/50">{hint}</p>}
+      {hint && <p className="font-inter -mt-1 text-sm text-main/50">{hint}</p>}
     </Card>
   )
 }

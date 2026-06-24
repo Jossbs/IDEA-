@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import { BrandLockup } from '@/design-system/BrandLockup'
 import { useAuth } from '@/features/auth/AuthContext'
 import { ROLE_LABELS } from '@/features/auth/types'
 import { cn } from '@/lib/cn'
@@ -11,14 +12,17 @@ const teacherNav: NavItem[] = [
   { label: 'Exámenes', to: '/exams' },
 ]
 
-const linkBase = 'font-inter pb-1 text-base font-medium text-white border-b-2 transition-opacity'
+const linkBase =
+  'font-sans pb-1 text-sm md:text-base font-medium border-b-2 transition-colors'
 
 /**
- * Top navigation bar. Slate-blue (`primary`) band with the brand on the left,
- * role-aware module links, and the signed-in user with a sign-out action.
+ * Top navigation bar. A clean white (`surface`) band with a subtle bottom
+ * border carries the navy IDEA lockup on the left, role-aware module links,
+ * and the signed-in user with a sign-out action.
  *
- * The PNG logo is dark artwork, so it sits inside a white rounded chip to keep
- * strong contrast against the dark navbar (accessibility).
+ * The brand is an inline SVG (navy + cyan on transparent) shown directly on
+ * the light surface — no chip needed. Its container fixes the height and
+ * preserves the 350:100 aspect ratio so the mark scales responsively.
  */
 export function Navbar() {
   const { user, logout } = useAuth()
@@ -32,23 +36,15 @@ export function Navbar() {
   const navItems = user?.role === 'TEACHER' ? teacherNav : []
 
   return (
-    <header className="bg-primary shadow-card">
-      <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-3 md:px-10">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <span className="inline-flex rounded-lg bg-white p-1.5 shadow-sm">
-            <img src="/logo.png" alt="Logotipo de IDEA" className="h-12 w-auto md:h-14" />
-          </span>
-          <div className="leading-tight">
-            <p className="font-nunito text-xl font-extrabold text-white">IDEA</p>
-            <p className="font-inter text-xs text-white/80">
-              Interfaz Digital para la Evaluación Académica
-            </p>
-          </div>
-        </div>
+    <header className="bg-surface border-b border-subtle">
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 md:gap-4 md:px-10">
+        {/* Brand — responsive SVG lockup, height-driven, aspect-locked */}
+        <NavLink to="/" className="block h-9 shrink-0 aspect-[350/100] sm:h-10 md:h-12">
+          <BrandLockup />
+        </NavLink>
 
         {/* Navigation */}
-        <nav className="ml-auto flex items-center gap-6">
+        <nav className="ml-auto flex items-center gap-4 md:gap-6">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -57,8 +53,8 @@ export function Navbar() {
                 cn(
                   linkBase,
                   isActive
-                    ? 'border-accent opacity-100'
-                    : 'border-transparent opacity-80 hover:opacity-100',
+                    ? 'border-accent text-primary'
+                    : 'border-transparent text-muted hover:text-main',
                 )
               }
             >
@@ -69,15 +65,15 @@ export function Navbar() {
 
         {/* Signed-in user */}
         {user && (
-          <div className="flex items-center gap-3 border-l border-white/20 pl-4">
+          <div className="flex items-center gap-3 border-l border-subtle pl-3 md:pl-4">
             <div className="hidden text-right leading-tight sm:block">
-              <p className="font-inter text-sm font-semibold text-white">{user.fullName}</p>
-              <p className="font-inter text-xs text-white/70">{ROLE_LABELS[user.role]}</p>
+              <p className="font-sans text-sm font-semibold text-main">{user.fullName}</p>
+              <p className="font-sans text-xs text-muted">{ROLE_LABELS[user.role]}</p>
             </div>
             <button
               type="button"
               onClick={handleLogout}
-              className="font-inter rounded-lg border border-white/30 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="font-sans rounded-md border border-focus px-3 py-1.5 text-sm font-medium text-main transition-colors hover:bg-app focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Salir
             </button>
